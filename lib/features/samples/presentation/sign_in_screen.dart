@@ -9,7 +9,6 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/app_text_field.dart';
-import '../widgets/sample_screen_shell.dart';
 
 // ============================================================
 // SIGN IN SCREEN — Sample Screen
@@ -178,15 +177,12 @@ class _SignInScreenState extends State<SignInScreen>
       ),
     );
 
-    return SampleScreenShell(
-      label: 'Showcase',
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: isTablet
-              ? _TabletLayout(formContent: formContent)
-              : _MobileLayout(formContent: formContent),
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: isTablet
+            ? _TabletLayout(formContent: formContent)
+            : _MobileLayout(formContent: formContent),
       ),
     );
   }

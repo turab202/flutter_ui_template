@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/samples/presentation/samples_launcher.dart';
+import 'features/samples/presentation/app_shell.dart';
 
 // ============================================================
 // MAIN ENTRY POINT
@@ -9,14 +9,16 @@ import 'features/samples/presentation/samples_launcher.dart';
 //
 // 🎨 PROJECT-SPECIFIC — CUSTOMIZE FOR EACH APP
 //
-// Replace SamplesLandingScreen with your application's root
-// screen when reusing this template in a new project.
+// Replace AppShell with your application's root widget when
+// reusing this template in a new project.
 //
-// The component-reference showcase (ShowcaseScreen) is still
-// accessible via the "Components" button in the landing app bar.
+// AppShell hosts four sample screens in a bottom-nav layout.
+// The design-system component reference (ShowcaseScreen) is
+// accessible via the "⚡ DS / Tokens" shortcut in the nav bar.
 //
 // ThemeData is provided by AppTheme.light() / AppTheme.dark()
-// which are built entirely from design tokens.
+// which are built entirely from design tokens — no values are
+// hard-coded in this file.
 //
 // ============================================================
 
@@ -40,23 +42,23 @@ class FlutterUITemplateApp extends StatelessWidget {
 
       // --------------------------------------------------------
       // 🔒 DESIGN SYSTEM — KEEP CONSISTENT
-      // Theme comes entirely from centralized AppTheme factory.
+      // Theme is built entirely from centralized AppTheme factory.
       // Do NOT override individual ThemeData values here.
       // --------------------------------------------------------
       theme: AppTheme.light(),
 
-      // ⚙️ OPTIONAL — dark mode support
+      // ⚙️ OPTIONAL — dark mode support (engineering addition)
       darkTheme: AppTheme.dark(),
 
-      // ⚙️ OPTIONAL — set to ThemeMode.dark or ThemeMode.system
+      // ⚙️ OPTIONAL — set to ThemeMode.dark or ThemeMode.light
       themeMode: ThemeMode.system,
 
       // --------------------------------------------------------
       // 🎨 PROJECT-SPECIFIC — CUSTOMIZE FOR EACH APP
-      // Landing screen: the sample screens gallery.
-      // TODO: Replace with your application's home screen.
+      // AppShell is the sample / demo entry point.
+      // Replace with your application's real home screen.
       // --------------------------------------------------------
-      home: const SamplesLandingScreen(),
+      home: const AppShell(),
     );
   }
 }

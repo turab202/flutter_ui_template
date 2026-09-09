@@ -7,7 +7,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_badge.dart';
-import '../../../core/widgets/app_bottom_navigation.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_divider.dart';
 import '../../../core/widgets/app_empty_state.dart';
@@ -32,11 +31,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _navIndex = 0;
   int _filterIndex = 0;
   bool _isLoadingMore = false;
   bool _showEmptyState = false;
-  // simulate skeleton loading on first mount
   bool _initialLoading = true;
 
   @override
@@ -64,70 +61,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final isTablet = ResponsiveLayout.isTablet(context);
 
-    return SampleScreenShell(
-      child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _DashboardAppBar(
-                onSearch: () => showAppToast(
-                  context,
-                  message: 'Search (demo)',
-                  variant: AppToastVariant.neutral,
-                ),
-                onNotifications: () => showAppToast(
-                  context,
-                  message: '3 new notifications',
-                  variant: AppToastVariant.neutral,
-                ),
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _DashboardAppBar(
+              onSearch: () => showAppToast(
+                context,
+                message: 'Search (demo)',
+                variant: AppToastVariant.neutral,
               ),
-              Expanded(
-                child: _initialLoading
-                    ? _SkeletonBody()
-                    : _DashboardBody(
-                        filterIndex: _filterIndex,
-                        filters: _filters,
-                        isTablet: isTablet,
-                        isLoadingMore: _isLoadingMore,
-                        showEmptyState: _showEmptyState,
-                        onFilterChanged: (i) =>
-                            setState(() => _filterIndex = i),
-                        onLoadMore: _loadMore,
-                        onCardTap: (name) => showAppToast(
-                          context,
-                          message: 'Opened "$name"',
-                          variant: AppToastVariant.neutral,
-                        ),
+              onNotifications: () => showAppToast(
+                context,
+                message: '3 new notifications',
+                variant: AppToastVariant.neutral,
+              ),
+            ),
+            Expanded(
+              child: _initialLoading
+                  ? _SkeletonBody()
+                  : _DashboardBody(
+                      filterIndex: _filterIndex,
+                      filters: _filters,
+                      isTablet: isTablet,
+                      isLoadingMore: _isLoadingMore,
+                      showEmptyState: _showEmptyState,
+                      onFilterChanged: (i) => setState(() => _filterIndex = i),
+                      onLoadMore: _loadMore,
+                      onCardTap: (name) => showAppToast(
+                        context,
+                        message: 'Opened "$name"',
+                        variant: AppToastVariant.neutral,
                       ),
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: AppBottomNavigation(
-          currentIndex: _navIndex,
-          onTap: (i) => setState(() => _navIndex = i),
-          items: [
-            const AppBottomNavItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            AppBottomNavItem(
-              icon: const Icon(Icons.folder_outlined),
-              activeIcon: const Icon(Icons.folder_rounded),
-              label: 'Projects',
-              badge: NotificationDot(count: 3),
-            ),
-            const AppBottomNavItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart_rounded),
-              label: 'Analytics',
-            ),
-            const AppBottomNavItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
+                    ),
             ),
           ],
         ),
@@ -152,9 +119,7 @@ class _DashboardAppBar extends StatelessWidget {
     return Container(
       height: 56,
       color: AppColors.background,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: [
           // Logo
@@ -169,7 +134,11 @@ class _DashboardAppBar extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
+            child: const Icon(
+              Icons.bolt_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
@@ -187,8 +156,11 @@ class _DashboardAppBar extends StatelessWidget {
               child: const SizedBox(
                 width: 44,
                 height: 44,
-                child: Icon(Icons.search_rounded,
-                    color: AppColors.textSecondary, size: 22),
+                child: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textSecondary,
+                  size: 22,
+                ),
               ),
             ),
           ),
@@ -205,8 +177,11 @@ class _DashboardAppBar extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    const Icon(Icons.notifications_outlined,
-                        color: AppColors.textSecondary, size: 22),
+                    const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.textSecondary,
+                      size: 22,
+                    ),
                     Positioned(
                       top: 8,
                       right: 8,
@@ -248,16 +223,19 @@ class _SkeletonBody extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             // Stat cards row
             Row(
-              children: List.generate(4, (_) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.xs),
-                  child: SkeletonBox(
-                    width: double.infinity,
-                    height: 80,
-                    borderRadius: BorderRadius.circular(12),
+              children: List.generate(
+                4,
+                (_) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    child: SkeletonBox(
+                      width: double.infinity,
+                      height: 80,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              )),
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             const SkeletonLine(width: 120, height: 20),
@@ -352,37 +330,55 @@ class _DashboardBody extends StatelessWidget {
               // Stats grid — 2 cols on mobile, 4 on tablet
               isTablet
                   ? Row(
-                      children: SampleData.stats.map((s) => Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: AppSpacing.xs),
-                          child: _StatCard(stat: s),
-                        ),
-                      )).toList(),
+                      children: SampleData.stats
+                          .map(
+                            (s) => Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.xs,
+                                ),
+                                child: _StatCard(stat: s),
+                              ),
+                            ),
+                          )
+                          .toList(),
                     )
                   : Column(
                       children: [
                         Row(
-                          children: SampleData.stats.take(2).map((s) => Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: s == SampleData.stats[0]
-                                    ? AppSpacing.xs : 0,
-                              ),
-                              child: _StatCard(stat: s),
-                            ),
-                          )).toList(),
+                          children: SampleData.stats
+                              .take(2)
+                              .map(
+                                (s) => Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: s == SampleData.stats[0]
+                                          ? AppSpacing.xs
+                                          : 0,
+                                    ),
+                                    child: _StatCard(stat: s),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Row(
-                          children: SampleData.stats.skip(2).map((s) => Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: s == SampleData.stats[2]
-                                    ? AppSpacing.xs : 0,
-                              ),
-                              child: _StatCard(stat: s),
-                            ),
-                          )).toList(),
+                          children: SampleData.stats
+                              .skip(2)
+                              .map(
+                                (s) => Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: s == SampleData.stats[2]
+                                          ? AppSpacing.xs
+                                          : 0,
+                                    ),
+                                    child: _StatCard(stat: s),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                     ),
@@ -400,9 +396,7 @@ class _DashboardBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Text(
                   'Quick Actions',
                   style: AppTypography.h3.copyWith(
@@ -413,8 +407,7 @@ class _DashboardBody extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Row(
                   children: [
                     _QuickActionChip(
@@ -468,14 +461,16 @@ class _DashboardBody extends StatelessWidget {
                     child: Text(
                       'Active Projects',
                       style: AppTypography.h3.copyWith(
-                          color: AppColors.textPrimary),
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                   TextButton(
                     onPressed: () {},
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs),
+                        horizontal: AppSpacing.xs,
+                      ),
                       minimumSize: const Size(44, 44),
                     ),
                     child: Text(
@@ -489,13 +484,15 @@ class _DashboardBody extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
-              ...SampleData.projects.map((p) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                child: _ProjectCard(
-                  project: p,
-                  onTap: () => onCardTap(p.name),
+              ...SampleData.projects.map(
+                (p) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: _ProjectCard(
+                    project: p,
+                    onTap: () => onCardTap(p.name),
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
         ),
@@ -538,7 +535,8 @@ class _DashboardBody extends StatelessWidget {
                     child: Text(
                       'Recent Activity',
                       style: AppTypography.h3.copyWith(
-                          color: AppColors.textPrimary),
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                 ],
@@ -562,9 +560,7 @@ class _DashboardBody extends StatelessWidget {
                   onCtaTap: () {},
                 ),
               ] else ...[
-                ...SampleData.activities.map(
-                  (a) => _ActivityTile(item: a),
-                ),
+                ...SampleData.activities.map((a) => _ActivityTile(item: a)),
                 const SizedBox(height: AppSpacing.xs),
                 if (isLoadingMore)
                   const AppPaginationLoader()
@@ -630,8 +626,7 @@ class _StatCard extends StatelessWidget {
               Text(
                 stat.delta,
                 style: AppTypography.small.copyWith(
-                  color:
-                      stat.isPositive ? AppColors.success : AppColors.error,
+                  color: stat.isPositive ? AppColors.success : AppColors.error,
                   fontSize: 11,
                 ),
               ),
@@ -791,7 +786,9 @@ class _ProjectCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: AppColors.background, width: 1.5),
+                                color: AppColors.background,
+                                width: 1.5,
+                              ),
                             ),
                             child: AppAvatar(
                               initials: String.fromCharCode(65 + i),
@@ -839,7 +836,9 @@ class _TeamListTile extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: member.isOnline ? AppColors.success : AppColors.textDisabled,
+                color: member.isOnline
+                    ? AppColors.success
+                    : AppColors.textDisabled,
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.background, width: 1.5),
               ),
@@ -886,21 +885,31 @@ class _ActivityTile extends StatelessWidget {
 
   static IconData _iconFor(ActivityIcon a) {
     switch (a) {
-      case ActivityIcon.design:   return Icons.design_services_outlined;
-      case ActivityIcon.calendar: return Icons.calendar_today_outlined;
-      case ActivityIcon.check:    return Icons.check_circle_outline_rounded;
-      case ActivityIcon.mobile:   return Icons.phone_iphone_outlined;
-      case ActivityIcon.research: return Icons.biotech_outlined;
-      case ActivityIcon.sprint:   return Icons.directions_run_outlined;
+      case ActivityIcon.design:
+        return Icons.design_services_outlined;
+      case ActivityIcon.calendar:
+        return Icons.calendar_today_outlined;
+      case ActivityIcon.check:
+        return Icons.check_circle_outline_rounded;
+      case ActivityIcon.mobile:
+        return Icons.phone_iphone_outlined;
+      case ActivityIcon.research:
+        return Icons.biotech_outlined;
+      case ActivityIcon.sprint:
+        return Icons.directions_run_outlined;
     }
   }
 
   static AppBadgeVariant _variantFor(ActivityBadge b) {
     switch (b) {
-      case ActivityBadge.success:   return AppBadgeVariant.success;
-      case ActivityBadge.warning:   return AppBadgeVariant.warning;
-      case ActivityBadge.primary:   return AppBadgeVariant.primary;
-      case ActivityBadge.secondary: return AppBadgeVariant.secondary;
+      case ActivityBadge.success:
+        return AppBadgeVariant.success;
+      case ActivityBadge.warning:
+        return AppBadgeVariant.warning;
+      case ActivityBadge.primary:
+        return AppBadgeVariant.primary;
+      case ActivityBadge.secondary:
+        return AppBadgeVariant.secondary;
     }
   }
 
