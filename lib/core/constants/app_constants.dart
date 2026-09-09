@@ -24,7 +24,13 @@ abstract final class AppConstants {
   /// Minimum button height. PDF: 48pt minimum.
   static const double minButtonHeight = 48.0;
 
-  /// Small button height (secondary/small variant). PDF: 40pt.
+  /// Small button visual height — PDF §7.1: secondary/small variant = 40pt.
+  ///
+  /// Note: The PDF §7.1 code spec shows 40pt for the secondary/small variant,
+  /// while PDF §4 requires a 44pt minimum touch target. These are reconciled
+  /// by keeping the *visual* container at 40pt while the InkWell interaction
+  /// area is always at least 44pt. Use [minTouchTarget] (44pt) when you need
+  /// to enforce the full interactive area minimum.
   static const double smallButtonHeight = 40.0;
 
   /// Minimum input field height. PDF: 48pt minimum.

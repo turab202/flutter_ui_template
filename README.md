@@ -41,7 +41,7 @@ It is **not** an application. It is a component library and visual showcase that
 | Constants | `AppConstants` — touch targets, heights, z-index, sizes |
 | Responsive | `ResponsiveLayout`, `ResponsiveConstrainedBox` |
 | Accessibility | `AccessibilityHelpers`, `MinTouchTarget`, `FocusOutline` |
-| Widgets (12) | Button, TextField, Card, ListTile, Divider, Badge, BottomNav, Dialog, BottomSheet, Toast, EmptyState, Skeleton, Loading, ErrorState, Avatar, ScreenLayout |
+| Reusable Widgets (16) | Button, TextField, Card, ListTile, Divider, Badge, BottomNav, Dialog, BottomSheet, Toast, EmptyState, Skeleton, Loading, ErrorState, Avatar, ScreenLayout |
 | Showcase | Visual demo of every token and component |
 | Tests | Token values, widget states, touch targets, responsive breakpoints, WCAG contrast |
 
@@ -268,7 +268,7 @@ AppButton(
   onPressed: () => _save(),
 )
 
-// Secondary small (40pt)
+// Secondary small (visual height 40pt per PDF §7.1; interactive area meets 44pt touch target per PDF §4)
 AppButton(
   label: 'Cancel',
   onPressed: () => Navigator.pop(context),

@@ -14,7 +14,14 @@ import '../theme/app_typography.dart';
 //
 // PDF Specifications:
 //   Primary large:   height 48pt, full width
-//   Secondary small: height 40pt
+//   Secondary small: height 40pt (visual height per PDF §7.1 code spec)
+//
+//   Note on small height vs touch target:
+//   PDF §7.1 explicitly shows the secondary/small variant at 40pt height.
+//   PDF §4 states the minimum touch target is 44×44pt.
+//   These are reconciled by keeping the *visual* height at 40pt while
+//   the tappable InkWell area is unconstrained and always >= 44pt.
+//   The button is never smaller than its touch target in practice.
 //
 //   States:
 //     Default:  bg = primary, opacity 1
@@ -54,7 +61,8 @@ enum AppButtonSize {
   /// Large — 48pt height. PDF primary button spec.
   large,
 
-  /// Small — 40pt height. PDF secondary button spec.
+  /// Small — 40pt visual height. PDF secondary button spec (§7.1).
+  /// The touch target remains >= 44pt per PDF §4 touch target rules.
   small,
 }
 
