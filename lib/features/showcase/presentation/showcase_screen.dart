@@ -76,29 +76,30 @@ class ShowcaseScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.primary,
-                      Color(0xFF004499),
-                    ],
+                    colors: [AppColors.primary, Color(0xFF004499)],
                   ),
                 ),
                 child: SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.sm, 56, AppSpacing.sm, AppSpacing.xs),
+                      AppSpacing.sm,
+                      56,
+                      AppSpacing.sm,
+                      AppSpacing.xs,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Flutter UI Template',
-                          style: AppTypography.h2.copyWith(
-                              color: Colors.white),
+                          style: AppTypography.h2.copyWith(color: Colors.white),
                         ),
                         Text(
                           'Mobile App UI Consistency Guide v2.0',
                           style: AppTypography.caption.copyWith(
-                              color: Colors.white70),
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),
@@ -114,9 +115,7 @@ class ShowcaseScreen extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.all(AppSpacing.sm),
             sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                _buildSections(context),
-              ),
+              delegate: SliverChildListDelegate(_buildSections(context)),
             ),
           ),
         ],
@@ -229,21 +228,22 @@ class _IntroBanner extends StatelessWidget {
             ],
           ),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2)),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.design_services,
-                    color: AppColors.primary, size: 20),
+                const Icon(
+                  Icons.design_services,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   'Design System Showcase',
-                  style: AppTypography.h3.copyWith(
-                      color: AppColors.primary),
+                  style: AppTypography.h3.copyWith(color: AppColors.primary),
                 ),
               ],
             ),
@@ -254,7 +254,8 @@ class _IntroBanner extends StatelessWidget {
               'Every value traces back to a PDF specification or is '
               'clearly marked as an implementation decision.',
               style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary),
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Wrap(
@@ -283,7 +284,9 @@ class _Tag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xs, vertical: 2),
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(100),
@@ -291,7 +294,9 @@ class _Tag extends StatelessWidget {
       child: Text(
         label,
         style: AppTypography.small.copyWith(
-            color: AppColors.primary, fontSize: 11),
+          color: AppColors.primary,
+          fontSize: 11,
+        ),
       ),
     );
   }

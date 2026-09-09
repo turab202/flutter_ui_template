@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/showcase/presentation/showcase_screen.dart';
+import 'features/samples/presentation/samples_launcher.dart';
 
 // ============================================================
 // MAIN ENTRY POINT
@@ -9,8 +9,11 @@ import 'features/showcase/presentation/showcase_screen.dart';
 //
 // 🎨 PROJECT-SPECIFIC — CUSTOMIZE FOR EACH APP
 //
-// Replace ShowcaseScreen with your application's root screen
-// when reusing this template in a new project.
+// Replace SamplesLandingScreen with your application's root
+// screen when reusing this template in a new project.
+//
+// The component-reference showcase (ShowcaseScreen) is still
+// accessible via the "Components" button in the landing app bar.
 //
 // ThemeData is provided by AppTheme.light() / AppTheme.dark()
 // which are built entirely from design tokens.
@@ -50,9 +53,10 @@ class FlutterUITemplateApp extends StatelessWidget {
 
       // --------------------------------------------------------
       // 🎨 PROJECT-SPECIFIC — CUSTOMIZE FOR EACH APP
-      // TODO: Replace ShowcaseScreen with your home screen.
+      // Landing screen: the sample screens gallery.
+      // TODO: Replace with your application's home screen.
       // --------------------------------------------------------
-      home: const ShowcaseScreen(),
+      home: const SamplesLandingScreen(),
     );
   }
 }
