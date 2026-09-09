@@ -304,7 +304,7 @@ class _DashboardBody extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good morning, Alex 👋',
+                          'Good morning, Alex ',
                           style: AppTypography.h2.copyWith(
                             color: AppColors.textPrimary,
                           ),
