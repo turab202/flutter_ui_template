@@ -11,10 +11,11 @@ import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/app_text_field.dart';
 
 // ============================================================
-// SIGN IN SCREEN — Sample Screen
-// Demonstrates: branding, form fields, validation, loading state,
-// error state, social auth buttons, responsive layout.
-// All values from design tokens only.
+// SIGN IN SCREEN
+// Reference: centered logo, "Welcome back" heading,
+// Google/Apple social buttons, or-divider, email + password
+// fields, remember-me checkbox, forgot password, sign-in btn,
+// "Don't have an account?" + terms footnote.
 // ============================================================
 
 class SignInScreen extends StatefulWidget {
@@ -31,45 +32,30 @@ class _SignInScreenState extends State<SignInScreen>
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
 
-  bool _isLoading = false;
+  bool _loading = false;
   bool _rememberMe = false;
+  bool _showPassword = false;
   String? _emailError;
   String? _passwordError;
-  bool _showPassword = false;
 
-  late final AnimationController _fadeController;
-  late final Animation<double> _fadeAnimation;
-  late final AnimationController _slideController;
-  late final Animation<Offset> _slideAnimation;
+  late final AnimationController _fadeCtrl;
+  late final AnimationController _slideCtrl;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
+    _fadeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 550),
     );
-    _slideController = AnimationController(
+    _slideCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 450),
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: AppMotion.decelerate,
-    );
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _slideController,
-            curve: AppMotion.decelerate,
-          ),
-        );
-
-    // Staggered entrance
-    Future.delayed(const Duration(milliseconds: 80), () {
+    Future.delayed(const Duration(milliseconds: 60), () {
       if (mounted) {
-        _fadeController.forward();
-        _slideController.forward();
+        _fadeCtrl.forward();
+        _slideCtrl.forward();
       }
     });
   }
@@ -80,51 +66,37 @@ class _SignInScreenState extends State<SignInScreen>
     _passwordController.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
-    _fadeController.dispose();
-    _slideController.dispose();
+    _fadeCtrl.dispose();
+    _slideCtrl.dispose();
     super.dispose();
   }
 
   bool _validate() {
     bool ok = true;
     final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
+    final pw = _passwordController.text;
     setState(() {
-      if (email.isEmpty) {
-        _emailError = 'Email address is required';
-        ok = false;
-      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-        _emailError = 'Enter a valid email address';
-        ok = false;
-      } else {
-        _emailError = null;
-      }
-
-      if (password.isEmpty) {
-        _passwordError = 'Password is required';
-        ok = false;
-      } else if (password.length < 8) {
-        _passwordError = 'Password must be at least 8 characters';
-        ok = false;
-      } else {
-        _passwordError = null;
-      }
+      _emailError = email.isEmpty
+          ? 'Email address is required'
+          : !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)
+          ? 'Enter a valid email address'
+          : null;
+      _passwordError = pw.isEmpty
+          ? 'Password is required'
+          : pw.length < 8
+          ? 'Password must be at least 8 characters'
+          : null;
+      if (_emailError != null || _passwordError != null) ok = false;
     });
     return ok;
   }
 
-  Future<void> _handleSignIn() async {
+  Future<void> _signIn() async {
     if (!_validate()) return;
-
-    setState(() => _isLoading = true);
-
-    // Simulate network delay — no real auth
+    setState(() => _loading = true);
     await Future.delayed(const Duration(milliseconds: 1800));
-
     if (!mounted) return;
-    setState(() => _isLoading = false);
-
+    setState(() => _loading = false);
     showAppToast(
       context,
       message: 'Signed in successfully! (demo)',
@@ -132,47 +104,47 @@ class _SignInScreenState extends State<SignInScreen>
     );
   }
 
-  void _handleForgotPassword() {
-    showAppToast(
-      context,
-      message: 'Password reset link sent (demo)',
-      variant: AppToastVariant.neutral,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final reduceMotion = AppMotion.shouldReduceMotion(context);
+    final reduce = AppMotion.shouldReduceMotion(context);
     final isTablet = ResponsiveLayout.isTablet(context);
 
-    Widget formContent = FadeTransition(
-      opacity: reduceMotion
+    final content = FadeTransition(
+      opacity: reduce
           ? const AlwaysStoppedAnimation(1.0)
-          : _fadeAnimation,
+          : CurvedAnimation(parent: _fadeCtrl, curve: AppMotion.decelerate),
       child: SlideTransition(
-        position: reduceMotion
+        position: reduce
             ? const AlwaysStoppedAnimation(Offset.zero)
-            : _slideAnimation,
-        child: _SignInForm(
+            : Tween<Offset>(
+                begin: const Offset(0, 0.03),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: _slideCtrl,
+                  curve: AppMotion.decelerate,
+                ),
+              ),
+        child: _Form(
           emailController: _emailController,
           passwordController: _passwordController,
           emailFocus: _emailFocus,
           passwordFocus: _passwordFocus,
           emailError: _emailError,
           passwordError: _passwordError,
-          isLoading: _isLoading,
+          loading: _loading,
           rememberMe: _rememberMe,
           showPassword: _showPassword,
-          onRememberMeChanged: (v) => setState(() => _rememberMe = v ?? false),
-          onShowPasswordChanged: () =>
+          onRememberMe: (v) => setState(() => _rememberMe = v ?? false),
+          onTogglePassword: () =>
               setState(() => _showPassword = !_showPassword),
-          onSignIn: _handleSignIn,
-          onForgotPassword: _handleForgotPassword,
-          onSocialSignIn: (provider) => showAppToast(
-            context,
-            message: 'Continue with $provider (demo)',
-            variant: AppToastVariant.neutral,
-          ),
+          onSignIn: _signIn,
+          onForgotPassword: () =>
+              showAppToast(context, message: 'Reset link sent (demo)'),
+          onSocialTap: (p) =>
+              showAppToast(context, message: 'Continue with $p (demo)'),
+          onCreateAccount: () =>
+              showAppToast(context, message: 'Sign up flow (demo)'),
         ),
       ),
     );
@@ -180,87 +152,64 @@ class _SignInScreenState extends State<SignInScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: isTablet
-            ? _TabletLayout(formContent: formContent)
-            : _MobileLayout(formContent: formContent),
+        child: isTablet ? _tabletWrap(content) : _mobileWrap(content),
       ),
     );
   }
-}
 
-// ----------------------------------------------------------
-// Mobile layout: full-screen scrollable form
-// ----------------------------------------------------------
-class _MobileLayout extends StatelessWidget {
-  const _MobileLayout({required this.formContent});
-  final Widget formContent;
+  Widget _mobileWrap(Widget child) => SingleChildScrollView(
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.sm,
+      vertical: AppSpacing.lg,
+    ),
+    child: child,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.lg,
-      ),
-      child: formContent,
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Tablet layout: centered card with max-width cap
-// ----------------------------------------------------------
-class _TabletLayout extends StatelessWidget {
-  const _TabletLayout({required this.formContent});
-  final Widget formContent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: AppRadius.lgAll,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 32,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: formContent,
+  Widget _tabletWrap(Widget child) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: AppRadius.lgAll,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 32,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
+          child: child,
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // ----------------------------------------------------------
-// The form content (shared between mobile/tablet)
+// Form content — exactly matches reference layout
 // ----------------------------------------------------------
-class _SignInForm extends StatelessWidget {
-  const _SignInForm({
+class _Form extends StatelessWidget {
+  const _Form({
     required this.emailController,
     required this.passwordController,
     required this.emailFocus,
     required this.passwordFocus,
     required this.emailError,
     required this.passwordError,
-    required this.isLoading,
+    required this.loading,
     required this.rememberMe,
     required this.showPassword,
-    required this.onRememberMeChanged,
-    required this.onShowPasswordChanged,
+    required this.onRememberMe,
+    required this.onTogglePassword,
     required this.onSignIn,
     required this.onForgotPassword,
-    required this.onSocialSignIn,
+    required this.onSocialTap,
+    required this.onCreateAccount,
   });
 
   final TextEditingController emailController;
@@ -269,41 +218,42 @@ class _SignInForm extends StatelessWidget {
   final FocusNode passwordFocus;
   final String? emailError;
   final String? passwordError;
-  final bool isLoading;
+  final bool loading;
   final bool rememberMe;
   final bool showPassword;
-  final ValueChanged<bool?> onRememberMeChanged;
-  final VoidCallback onShowPasswordChanged;
+  final ValueChanged<bool?> onRememberMe;
+  final VoidCallback onTogglePassword;
   final VoidCallback onSignIn;
   final VoidCallback onForgotPassword;
-  final ValueChanged<String> onSocialSignIn;
+  final ValueChanged<String> onSocialTap;
+  final VoidCallback onCreateAccount;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Branding ──────────────────────────────────────
-        _BrandHeader(),
+        // ── Logo + heading ────────────────────────────────
+        _Logo(),
         const SizedBox(height: AppSpacing.xl),
 
-        // ── Social auth ───────────────────────────────────
-        _SocialButton(
-          label: 'Continue with Google',
+        // ── Social buttons ────────────────────────────────
+        _SocialBtn(
           icon: Icons.g_mobiledata_rounded,
-          onTap: () => onSocialSignIn('Google'),
+          label: 'Continue with Google',
+          onTap: () => onSocialTap('Google'),
         ),
         const SizedBox(height: AppSpacing.xs),
-        _SocialButton(
-          label: 'Continue with Apple',
+        _SocialBtn(
           icon: Icons.apple,
-          onTap: () => onSocialSignIn('Apple'),
+          label: 'Continue with Apple',
+          onTap: () => onSocialTap('Apple'),
         ),
 
-        // ── Divider ───────────────────────────────────────
-        const SizedBox(height: AppSpacing.md),
-        _OrDivider(),
-        const SizedBox(height: AppSpacing.md),
+        // ── Or divider ────────────────────────────────────
+        const SizedBox(height: AppSpacing.sm),
+        const _OrDivider(),
+        const SizedBox(height: AppSpacing.sm),
 
         // ── Email ─────────────────────────────────────────
         AppTextField(
@@ -316,7 +266,7 @@ class _SignInForm extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           onSubmitted: (_) => passwordFocus.requestFocus(),
-          semanticLabel: 'Email address input',
+          semanticLabel: 'Email address',
         ),
         const SizedBox(height: AppSpacing.xs),
 
@@ -337,11 +287,12 @@ class _SignInForm extends StatelessWidget {
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
               color: AppColors.textSecondary,
+              size: 20,
             ),
-            onPressed: onShowPasswordChanged,
+            onPressed: onTogglePassword,
             tooltip: showPassword ? 'Hide password' : 'Show password',
           ),
-          semanticLabel: 'Password input',
+          semanticLabel: 'Password',
         ),
 
         // ── Remember me + Forgot ──────────────────────────
@@ -353,7 +304,7 @@ class _SignInForm extends StatelessWidget {
               height: 44,
               child: Checkbox(
                 value: rememberMe,
-                onChanged: onRememberMeChanged,
+                onChanged: onRememberMe,
                 activeColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -391,17 +342,17 @@ class _SignInForm extends StatelessWidget {
           ],
         ),
 
-        // ── Sign in button ────────────────────────────────
-        const SizedBox(height: AppSpacing.md),
+        // ── Sign In ───────────────────────────────────────
+        const SizedBox(height: AppSpacing.sm),
         AppButton(
           label: 'Sign In',
-          onPressed: isLoading ? null : onSignIn,
-          isLoading: isLoading,
+          onPressed: loading ? null : onSignIn,
+          isLoading: loading,
           semanticLabel: 'Sign in to your account',
         ),
 
-        // ── Sign up link ──────────────────────────────────
-        const SizedBox(height: AppSpacing.md),
+        // ── Create account ────────────────────────────────
+        const SizedBox(height: AppSpacing.sm),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -415,11 +366,7 @@ class _SignInForm extends StatelessWidget {
               label: 'Create a new account',
               button: true,
               child: GestureDetector(
-                onTap: () => showAppToast(
-                  context,
-                  message: 'Sign up flow (demo)',
-                  variant: AppToastVariant.neutral,
-                ),
+                onTap: onCreateAccount,
                 child: Text(
                   'Create account',
                   style: AppTypography.body.copyWith(
@@ -433,7 +380,7 @@ class _SignInForm extends StatelessWidget {
         ),
 
         // ── Terms ─────────────────────────────────────────
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         Text(
           'By signing in you agree to our Terms of Service and Privacy Policy.',
           style: AppTypography.small.copyWith(color: AppColors.textDisabled),
@@ -445,34 +392,32 @@ class _SignInForm extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// Brand header
+// Logo block
 // ----------------------------------------------------------
-class _BrandHeader extends StatelessWidget {
+class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Logo mark
         Container(
-          width: 64,
-          height: 64,
+          width: 72,
+          height: 72,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, Color(0xFF004499)],
+              colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
+                color: AppColors.primary.withValues(alpha: 0.30),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 36),
+          child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 40),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
@@ -494,14 +439,14 @@ class _BrandHeader extends StatelessWidget {
 // ----------------------------------------------------------
 // Social auth button
 // ----------------------------------------------------------
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.label,
+class _SocialBtn extends StatelessWidget {
+  const _SocialBtn({
     required this.icon,
+    required this.label,
     required this.onTap,
   });
-  final String label;
   final IconData icon;
+  final String label;
   final VoidCallback onTap;
 
   @override
@@ -518,18 +463,11 @@ class _SocialButton extends StatelessWidget {
             color: AppColors.background,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.borderDefault),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 22, color: AppColors.textPrimary),
+              Icon(icon, size: 24, color: AppColors.textPrimary),
               const SizedBox(width: AppSpacing.xs),
               Text(
                 label,
@@ -546,25 +484,23 @@ class _SocialButton extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// "Or" divider
+// Or divider
 // ----------------------------------------------------------
 class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          child: Text(
-            'or',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textDisabled,
-            ),
-          ),
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        child: Text(
+          'or',
+          style: AppTypography.caption.copyWith(color: AppColors.textDisabled),
         ),
-        Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
-      ],
-    );
-  }
+      ),
+      Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
+    ],
+  );
 }

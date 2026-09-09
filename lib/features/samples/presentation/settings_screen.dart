@@ -11,14 +11,12 @@ import '../../../core/widgets/app_dialog.dart';
 import '../../../core/widgets/app_divider.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../data/sample_data.dart';
-import '../widgets/sample_screen_shell.dart';
 
 // ============================================================
-// SETTINGS SCREEN — Sample Screen
-// Demonstrates: settings sections, list tiles with icons,
-// toggle/switch controls, radio buttons, sliders, checkboxes,
-// dividers, section headers, account actions, sign out dialog,
-// responsive layout.
+// SETTINGS SCREEN
+// Reference: profile card, APPEARANCE / NOTIFICATIONS /
+// ACCOUNT grouped sections, iOS-style toggle rows,
+// sign-out + delete-account danger zone.
 // ============================================================
 
 class SettingsScreen extends StatefulWidget {
@@ -29,26 +27,24 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Toggle states
-  final Map<String, bool> _toggles = {};
-  // Notification frequency radio
-  int _notifFrequency = 1; // 0=instant, 1=hourly, 2=daily
-  // Text size slider
+  // Toggle states (key = label)
+  final Map<String, bool> _toggles = {
+    'Dark Mode': false,
+    'Compact Layout': true,
+    'Push Notifications': true,
+    'Email Digest': true,
+    'Mentions & replies': true,
+  };
+
   double _textScale = 1.0;
-  // Checkboxes for notification types
-  bool _notifMentions = true;
-  bool _notifComments = true;
-  bool _notifTasks = false;
-  bool _notifUpdates = false;
 
-  bool _getToggle(String key, bool defaultVal) => _toggles[key] ?? defaultVal;
-
-  void _setToggle(String key, bool val) {
-    setState(() => _toggles[key] = val);
+  bool _get(String k) => _toggles[k] ?? false;
+  void _set(String k, bool v) {
+    setState(() => _toggles[k] = v);
     showAppToast(
       context,
-      message: val ? '$key enabled' : '$key disabled',
-      variant: val ? AppToastVariant.success : AppToastVariant.neutral,
+      message: '$k ${v ? 'enabled' : 'disabled'}',
+      variant: v ? AppToastVariant.success : AppToastVariant.neutral,
     );
   }
 
@@ -63,8 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppColors.error,
         ),
         content: const Text(
-          'Are you sure you want to sign out? '
-          'You can sign back in at any time.',
+          'Are you sure you want to sign out? You can sign back in at any time.',
         ),
         primaryLabel: 'Sign out',
         primaryAction: () {
@@ -81,7 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _confirmDeleteAccount() {
+  void _confirmDelete() {
     showAppDialog(
       context: context,
       dialog: AppDialog(
@@ -92,8 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppColors.error,
         ),
         content: const Text(
-          'This will permanently delete your account and all your data. '
-          'This action cannot be undone.',
+          'This will permanently delete your account and all your data. This action cannot be undone.',
         ),
         primaryLabel: 'Delete permanently',
         primaryAction: () {
@@ -114,52 +108,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isTablet = ResponsiveLayout.isTablet(context);
 
-    return SampleScreenShell(
-      child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // App bar
-              _SettingsAppBar(),
-              Expanded(
-                child: isTablet
-                    ? _TabletLayout(child: _buildScrollBody(context))
-                    : _buildScrollBody(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScrollBody(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+    Widget body = ListView(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        // ── Profile card ───────────────────────────────────
-        _ProfileCard(),
-        const SizedBox(height: AppSpacing.xs),
+        // ── App bar ─────────────────────────────────────
+        _SettingsAppBar(),
 
-        // ── Appearance ─────────────────────────────────────
-        _SectionHeader(title: 'Appearance'),
-        _SettingsGroup(
+        // ── Profile card ─────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm,
+            AppSpacing.xs,
+            AppSpacing.sm,
+            0,
+          ),
+          child: _ProfileCard(),
+        ),
+
+        // ── APPEARANCE ──────────────────────────────────
+        _GroupHeader(label: 'APPEARANCE'),
+        _Group(
           children: [
-            _ToggleTile(
+            _ToggleRow(
               icon: Icons.dark_mode_outlined,
               label: 'Dark Mode',
               subtitle: 'Switch to dark theme',
-              value: _getToggle('darkMode', false),
-              onChanged: (v) => _setToggle('darkMode', v),
+              value: _get('Dark Mode'),
+              onChanged: (v) => _set('Dark Mode', v),
             ),
             const AppDivider(indent: 52),
-            _ToggleTile(
+            _ToggleRow(
               icon: Icons.view_compact_outlined,
               label: 'Compact Layout',
               subtitle: 'Reduce spacing in lists',
-              value: _getToggle('compactLayout', true),
-              onChanged: (v) => _setToggle('compactLayout', v),
+              value: _get('Compact Layout'),
+              onChanged: (v) => _set('Compact Layout', v),
             ),
             const AppDivider(indent: 52),
             // Text size slider
@@ -168,292 +151,144 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 horizontal: AppSpacing.sm,
                 vertical: AppSpacing.xs,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.text_fields_rounded,
-                        size: 20,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          'Text Size',
-                          style: AppTypography.body.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          _textScale == 1.0
-                              ? 'Default'
-                              : _textScale < 1.0
-                              ? 'Small'
-                              : 'Large',
-                          style: AppTypography.small.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const Icon(
+                    Icons.text_fields_outlined,
+                    size: 20,
+                    color: AppColors.textSecondary,
                   ),
-                  Semantics(
-                    label: 'Text size slider',
-                    child: Slider(
-                      value: _textScale,
-                      min: 0.8,
-                      max: 1.4,
-                      divisions: 6,
-                      activeColor: AppColors.primary,
-                      inactiveColor: AppColors.borderDefault,
-                      onChanged: (v) => setState(() => _textScale = v),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Text Size',
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'A',
-                        style: AppTypography.small.copyWith(
-                          color: AppColors.textDisabled,
-                        ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _textScale < 0.95
+                          ? 'Small'
+                          : _textScale > 1.05
+                          ? 'Large'
+                          : 'Default',
+                      style: AppTypography.small.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      Text(
-                        'A',
-                        style: AppTypography.h3.copyWith(
-                          color: AppColors.textDisabled,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                0,
+                AppSpacing.sm,
+                AppSpacing.xs,
+              ),
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.primary,
+                  inactiveTrackColor: AppColors.borderDefault,
+                  thumbColor: AppColors.primary,
+                  overlayColor: AppColors.primary.withValues(alpha: 0.12),
+                  trackHeight: 4,
+                ),
+                child: Slider(
+                  value: _textScale,
+                  min: 0.8,
+                  max: 1.4,
+                  divisions: 6,
+                  onChanged: (v) => setState(() => _textScale = v),
+                ),
+              ),
+            ),
             const AppDivider(indent: 52),
-            _NavigateTile(
+            _NavRow(
               icon: Icons.color_lens_outlined,
               label: 'Accent Color',
               subtitle: 'Blue (default)',
-              onTap: () => showAppToast(
-                context,
-                message: 'Color picker (demo)',
-                variant: AppToastVariant.neutral,
-              ),
+              onTap: () =>
+                  showAppToast(context, message: 'Color picker (demo)'),
             ),
           ],
         ),
 
-        const SizedBox(height: AppSpacing.xs),
-
-        // ── Notifications ──────────────────────────────────
-        _SectionHeader(title: 'Notifications'),
-        _SettingsGroup(
+        // ── NOTIFICATIONS ───────────────────────────────
+        _GroupHeader(label: 'NOTIFICATIONS'),
+        _Group(
           children: [
-            _ToggleTile(
+            _ToggleRow(
               icon: Icons.notifications_outlined,
               label: 'Push Notifications',
               subtitle: 'Receive alerts on your device',
-              value: _getToggle('pushNotif', true),
-              onChanged: (v) => _setToggle('pushNotif', v),
+              value: _get('Push Notifications'),
+              onChanged: (v) => _set('Push Notifications', v),
             ),
             const AppDivider(indent: 52),
-            _ToggleTile(
+            _ToggleRow(
               icon: Icons.email_outlined,
               label: 'Email Digest',
               subtitle: 'Daily summary at 9am',
-              value: _getToggle('emailDigest', true),
-              onChanged: (v) => _setToggle('emailDigest', v),
+              value: _get('Email Digest'),
+              onChanged: (v) => _set('Email Digest', v),
             ),
             const AppDivider(indent: 52),
-
-            // Notification type checkboxes
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.tune_outlined,
-                        size: 20,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Notify me about',
-                        style: AppTypography.body.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _CheckboxRow(
-                    label: 'Mentions & replies',
-                    value: _notifMentions,
-                    onChanged: (v) =>
-                        setState(() => _notifMentions = v ?? false),
-                  ),
-                  _CheckboxRow(
-                    label: 'Comments on my work',
-                    value: _notifComments,
-                    onChanged: (v) =>
-                        setState(() => _notifComments = v ?? false),
-                  ),
-                  _CheckboxRow(
-                    label: 'Task assignments',
-                    value: _notifTasks,
-                    onChanged: (v) => setState(() => _notifTasks = v ?? false),
-                  ),
-                  _CheckboxRow(
-                    label: 'Product updates',
-                    value: _notifUpdates,
-                    onChanged: (v) =>
-                        setState(() => _notifUpdates = v ?? false),
-                  ),
-                ],
+            _NavRow(
+              icon: Icons.tune_outlined,
+              label: 'Notify me about',
+              onTap: () {},
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textDisabled,
+                size: 18,
               ),
             ),
             const AppDivider(indent: 52),
-
-            // Frequency radio
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule_outlined,
-                        size: 20,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Delivery frequency',
-                        style: AppTypography.body.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  _RadioRow(
-                    label: 'Instant',
-                    value: 0,
-                    groupValue: _notifFrequency,
-                    onChanged: (v) => setState(() => _notifFrequency = v ?? 0),
-                  ),
-                  _RadioRow(
-                    label: 'Every hour',
-                    value: 1,
-                    groupValue: _notifFrequency,
-                    onChanged: (v) => setState(() => _notifFrequency = v ?? 1),
-                  ),
-                  _RadioRow(
-                    label: 'Once a day',
-                    value: 2,
-                    groupValue: _notifFrequency,
-                    onChanged: (v) => setState(() => _notifFrequency = v ?? 2),
-                  ),
-                ],
-              ),
+            _ToggleRow(
+              icon: Icons.alternate_email_rounded,
+              label: 'Mentions & replies',
+              value: _get('Mentions & replies'),
+              onChanged: (v) => _set('Mentions & replies', v),
             ),
           ],
         ),
 
-        const SizedBox(height: AppSpacing.xs),
-
-        // ── Privacy & Security ─────────────────────────────
-        _SectionHeader(title: 'Privacy & Security'),
-        _SettingsGroup(
+        // ── ACCOUNT ────────────────────────────────────
+        _GroupHeader(label: 'ACCOUNT'),
+        _Group(
           children: [
-            _NavigateTile(
+            _NavRow(
               icon: Icons.security_outlined,
-              label: 'Two-Factor Authentication',
-              subtitle: 'Enabled via authenticator app',
-              badge: const AppBadge(
-                label: 'On',
-                variant: AppBadgeVariant.success,
-              ),
+              label: 'Privacy & Security',
               onTap: () =>
-                  showAppToast(context, message: '2FA settings (demo)'),
+                  showAppToast(context, message: 'Privacy & Security (demo)'),
             ),
             const AppDivider(indent: 52),
-            _NavigateTile(
-              icon: Icons.history_outlined,
-              label: 'Login Activity',
-              subtitle: 'View recent sign-ins',
+            _NavRow(
+              icon: Icons.help_outline_rounded,
+              label: 'Help & Support',
               onTap: () =>
-                  showAppToast(context, message: 'Login activity (demo)'),
-            ),
-            const AppDivider(indent: 52),
-            _NavigateTile(
-              icon: Icons.privacy_tip_outlined,
-              label: 'Data & Privacy',
-              subtitle: 'Manage your data',
-              onTap: () =>
-                  showAppToast(context, message: 'Privacy settings (demo)'),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppSpacing.xs),
-
-        // ── About ──────────────────────────────────────────
-        _SectionHeader(title: 'About'),
-        _SettingsGroup(
-          children: [
-            _InfoTile(
-              icon: Icons.info_outline_rounded,
-              label: 'Version',
-              value: '2.4.1 (build 1042)',
-            ),
-            const AppDivider(indent: 52),
-            _NavigateTile(
-              icon: Icons.description_outlined,
-              label: 'Terms of Service',
-              onTap: () => showAppToast(context, message: 'Terms (demo)'),
-            ),
-            const AppDivider(indent: 52),
-            _NavigateTile(
-              icon: Icons.policy_outlined,
-              label: 'Privacy Policy',
-              onTap: () =>
-                  showAppToast(context, message: 'Privacy policy (demo)'),
-            ),
-            const AppDivider(indent: 52),
-            _NavigateTile(
-              icon: Icons.code_outlined,
-              label: 'Open Source Licenses',
-              onTap: () => showAppToast(context, message: 'Licenses (demo)'),
+                  showAppToast(context, message: 'Help & Support (demo)'),
             ),
           ],
         ),
 
         const SizedBox(height: AppSpacing.sm),
 
-        // ── Account actions ────────────────────────────────
+        // ── Danger zone ─────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Column(
@@ -467,16 +302,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: AppSpacing.xs),
               AppButton(
                 label: 'Delete Account',
-                onPressed: _confirmDeleteAccount,
+                onPressed: _confirmDelete,
                 variant: AppButtonVariant.destructive,
                 leadingIcon: const Icon(Icons.delete_forever_outlined),
               ),
             ],
           ),
         ),
-
-        const SizedBox(height: AppSpacing.xl),
       ],
+    );
+
+    if (isTablet) {
+      body = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: body,
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(child: body),
     );
   }
 }
@@ -490,52 +337,14 @@ class _SettingsAppBar extends StatelessWidget {
     return Container(
       height: 56,
       color: AppColors.background,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: [
-          Semantics(
-            label: 'Go back',
-            button: true,
-            child: InkWell(
-              onTap: () => Navigator.of(context).pop(),
-              borderRadius: BorderRadius.circular(22),
-              child: const SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppColors.textPrimary,
-                  size: 22,
-                ),
-              ),
-            ),
-          ),
           Expanded(
             child: Text(
               'Settings',
               style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
               textAlign: TextAlign.center,
-            ),
-          ),
-          Semantics(
-            label: 'Help',
-            button: true,
-            child: InkWell(
-              onTap: () => showAppToast(
-                context,
-                message: 'Help center (demo)',
-                variant: AppToastVariant.neutral,
-              ),
-              borderRadius: BorderRadius.circular(22),
-              child: const SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(
-                  Icons.help_outline_rounded,
-                  color: AppColors.textSecondary,
-                  size: 22,
-                ),
-              ),
             ),
           ),
         ],
@@ -545,39 +354,20 @@ class _SettingsAppBar extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// Tablet layout (two-column)
-// ----------------------------------------------------------
-class _TabletLayout extends StatelessWidget {
-  const _TabletLayout({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680),
-        child: child,
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Profile summary card at top
+// Profile summary card
 // ----------------------------------------------------------
 class _ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 2,
+            color: Color(0x0A000000),
+            blurRadius: 4,
             offset: Offset(0, 1),
           ),
         ],
@@ -600,6 +390,7 @@ class _ProfileCard extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   SampleData.userEmail,
                   style: AppTypography.caption.copyWith(
@@ -640,38 +431,37 @@ class _ProfileCard extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// Section header
+// Section group header
 // ----------------------------------------------------------
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
-  final String title;
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader({required this.label});
+  final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.xxs,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(
+      AppSpacing.sm,
+      AppSpacing.sm,
+      AppSpacing.sm,
+      AppSpacing.xxs,
+    ),
+    child: Text(
+      label,
+      style: AppTypography.small.copyWith(
+        color: AppColors.textDisabled,
+        letterSpacing: 0.8,
+        fontWeight: FontWeight.w600,
+        fontSize: 11,
       ),
-      child: Text(
-        title.toUpperCase(),
-        style: AppTypography.small.copyWith(
-          color: AppColors.textDisabled,
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }
 
 // ----------------------------------------------------------
-// Settings group (white card)
+// Group card
 // ----------------------------------------------------------
-class _SettingsGroup extends StatelessWidget {
-  const _SettingsGroup({required this.children});
+class _Group extends StatelessWidget {
+  const _Group({required this.children});
   final List<Widget> children;
 
   @override
@@ -683,8 +473,8 @@ class _SettingsGroup extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 2,
+            color: Color(0x0A000000),
+            blurRadius: 4,
             offset: Offset(0, 1),
           ),
         ],
@@ -698,10 +488,10 @@ class _SettingsGroup extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// Toggle tile
+// Toggle row
 // ----------------------------------------------------------
-class _ToggleTile extends StatelessWidget {
-  const _ToggleTile({
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({
     required this.icon,
     required this.label,
     this.subtitle,
@@ -754,10 +544,9 @@ class _ToggleTile extends StatelessWidget {
               value: value,
               onChanged: onChanged,
               activeTrackColor: AppColors.primary,
-              thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                return null;
-              }),
+              thumbColor: WidgetStateProperty.resolveWith(
+                (s) => s.contains(WidgetState.selected) ? Colors.white : null,
+              ),
               materialTapTargetSize: MaterialTapTargetSize.padded,
             ),
           ],
@@ -768,21 +557,21 @@ class _ToggleTile extends StatelessWidget {
 }
 
 // ----------------------------------------------------------
-// Navigate tile
+// Navigate row
 // ----------------------------------------------------------
-class _NavigateTile extends StatelessWidget {
-  const _NavigateTile({
+class _NavRow extends StatelessWidget {
+  const _NavRow({
     required this.icon,
     required this.label,
     this.subtitle,
-    this.badge,
     required this.onTap,
+    this.trailing,
   });
   final IconData icon;
   final String label;
   final String? subtitle;
-  final Widget? badge;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -822,147 +611,15 @@ class _NavigateTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (badge != null) ...[
-                badge!,
-                const SizedBox(width: AppSpacing.xs),
-              ],
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: AppColors.textDisabled,
-              ),
+              trailing ??
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.textDisabled,
+                  ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Info tile (no interaction, just displays a value)
-// ----------------------------------------------------------
-class _InfoTile extends StatelessWidget {
-  const _InfoTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.textSecondary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.body.copyWith(color: AppColors.textPrimary),
-            ),
-          ),
-          Text(
-            value,
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Checkbox row
-// ----------------------------------------------------------
-class _CheckboxRow extends StatelessWidget {
-  const _CheckboxRow({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
-  final String label;
-  final bool value;
-  final ValueChanged<bool?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 44,
-          height: 44,
-          child: Checkbox(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        ),
-        Text(
-          label,
-          style: AppTypography.body.copyWith(color: AppColors.textPrimary),
-        ),
-      ],
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Radio row — uses RadioListTile to avoid deprecated Radio API
-// ----------------------------------------------------------
-class _RadioRow extends StatelessWidget {
-  const _RadioRow({
-    required this.label,
-    required this.value,
-    required this.groupValue,
-    required this.onChanged,
-  });
-  final String label;
-  final int value;
-  final int groupValue;
-  final ValueChanged<int?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onChanged(value),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: Center(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: groupValue == value
-                        ? AppColors.primary
-                        : AppColors.borderStrong,
-                    width: groupValue == value ? 6 : 2,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Text(
-            label,
-            style: AppTypography.body.copyWith(color: AppColors.textPrimary),
-          ),
-        ],
       ),
     );
   }
