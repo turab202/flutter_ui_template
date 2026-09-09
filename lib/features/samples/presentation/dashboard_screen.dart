@@ -57,74 +57,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
       body: _initialLoading ? _buildSkeleton() : _buildBody(context),
     );
   }
 
   Widget _buildSkeleton() {
-    return ShimmerScope(
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.sm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.xs),
-              const SkeletonLine(width: 140, height: 14),
-              const SizedBox(height: 6),
-              const SkeletonLine(width: 220, height: 28),
-              const SizedBox(height: 4),
-              const SkeletonLine(width: 180, height: 14),
-              const SizedBox(height: AppSpacing.sm),
-              // User card skeleton
-              SkeletonBox(
-                width: double.infinity,
-                height: 72,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              // Stat row
-              Row(
-                children: List.generate(
-                  4,
-                  (_) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: SkeletonBox(
-                        width: double.infinity,
-                        height: 60,
-                        borderRadius: BorderRadius.circular(8),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ShimmerScope(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                const SkeletonLine(width: 140, height: 14),
+                const SizedBox(height: 6),
+                const SkeletonLine(width: 220, height: 28),
+                const SizedBox(height: 4),
+                const SkeletonLine(width: 180, height: 14),
+                const SizedBox(height: AppSpacing.sm),
+                // User card skeleton
+                SkeletonBox(
+                  width: double.infinity,
+                  height: 72,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Stat row
+                Row(
+                  children: List.generate(
+                    4,
+                    (_) => Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: SkeletonBox(
+                          width: double.infinity,
+                          height: 60,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const SkeletonLine(width: 120, height: 18),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: List.generate(
-                  4,
-                  (_) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: SkeletonBox(
-                        width: double.infinity,
-                        height: 80,
-                        borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: AppSpacing.md),
+                const SkeletonLine(width: 120, height: 18),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  children: List.generate(
+                    4,
+                    (_) => Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: SkeletonBox(
+                          width: double.infinity,
+                          height: 80,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const SkeletonLine(width: 120, height: 18),
-              const SizedBox(height: AppSpacing.xs),
-              const SkeletonCard(),
-              const SizedBox(height: AppSpacing.xs),
-              const SkeletonCard(),
-            ],
+                const SizedBox(height: AppSpacing.md),
+                const SkeletonLine(width: 120, height: 18),
+                const SizedBox(height: AppSpacing.xs),
+                const SkeletonCard(),
+                const SizedBox(height: AppSpacing.xs),
+                const SkeletonCard(),
+              ],
+            ),
           ),
         ),
       ),
@@ -318,11 +321,14 @@ class _GreetingHeader extends StatelessWidget {
         AppSpacing.sm,
         AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFE8F0FE), Color(0xFFF0F4FF)],
+          colors: [
+            AppColors.primary.withValues(alpha: 0.08),
+            AppColors.surface,
+          ],
         ),
       ),
       child: Column(
@@ -444,11 +450,11 @@ class _UserCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.overlay.withValues(alpha: 0.04),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -536,11 +542,11 @@ class _StatStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.overlay.withValues(alpha: 0.04),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),

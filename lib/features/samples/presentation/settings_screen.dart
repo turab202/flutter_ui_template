@@ -364,11 +364,11 @@ class _ProfileCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.overlay.withValues(alpha: 0.04),
             blurRadius: 4,
-            offset: Offset(0, 1),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -471,11 +471,11 @@ class _Group extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.overlay.withValues(alpha: 0.04),
             blurRadius: 4,
-            offset: Offset(0, 1),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -545,7 +545,9 @@ class _ToggleRow extends StatelessWidget {
               onChanged: onChanged,
               activeTrackColor: AppColors.primary,
               thumbColor: WidgetStateProperty.resolveWith(
-                (s) => s.contains(WidgetState.selected) ? Colors.white : null,
+                (s) => s.contains(WidgetState.selected)
+                    ? AppColors.background
+                    : null,
               ),
               materialTapTargetSize: MaterialTapTargetSize.padded,
             ),

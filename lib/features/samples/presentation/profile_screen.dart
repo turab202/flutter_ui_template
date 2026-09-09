@@ -203,14 +203,14 @@ class _ProfileHeader extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF1565C0),
-                      Color(0xFF42A5F5),
-                      Color(0xFF64B5F6),
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.82),
+                      AppColors.primary.withValues(alpha: 0.62),
                     ],
                   ),
                 ),
@@ -224,7 +224,7 @@ class _ProfileHeader extends StatelessWidget {
                   height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: AppColors.background.withValues(alpha: 0.08),
                   ),
                 ),
               ),
@@ -236,7 +236,7 @@ class _ProfileHeader extends StatelessWidget {
                   height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: AppColors.background.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -482,25 +482,25 @@ class _CoverButton extends StatelessWidget {
             vertical: AppSpacing.xxs,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.20),
+            color: AppColors.background.withValues(alpha: 0.20),
             borderRadius: BorderRadius.circular(8),
           ),
           child: hasLabel
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, color: Colors.white, size: 14),
+                    Icon(icon, color: AppColors.background, size: 14),
                     const SizedBox(width: 4),
                     Text(
                       btnLabel ?? label,
                       style: AppTypography.small.copyWith(
-                        color: Colors.white,
+                        color: AppColors.background,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 )
-              : Icon(icon, color: Colors.white, size: 18),
+              : Icon(icon, color: AppColors.background, size: 18),
         ),
       ),
     );

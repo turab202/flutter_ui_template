@@ -177,7 +177,7 @@ class _SignInScreenState extends State<SignInScreen>
             borderRadius: AppRadius.lgAll,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: AppColors.overlay.withValues(alpha: 0.08),
                 blurRadius: 32,
                 offset: const Offset(0, 8),
               ),
@@ -403,10 +403,13 @@ class _Logo extends StatelessWidget {
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
+              colors: [
+                AppColors.primary,
+                AppColors.primary.withValues(alpha: 0.82),
+              ],
             ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
@@ -417,7 +420,7 @@ class _Logo extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 40),
+          child: Icon(Icons.bolt_rounded, color: AppColors.background, size: 40),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
