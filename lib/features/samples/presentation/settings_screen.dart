@@ -13,9 +13,6 @@ import '../../../core/widgets/app_snackbar.dart';
 // ============================================================
 // SETTINGS SCREEN
 // 🎨 PROJECT-SPECIFIC — sample content only
-// Matches reference: title + subtitle header, grouped sections
-// (Appearance, Notifications, Account, Privacy & Security)
-// with toggle rows and navigate rows.
 // ============================================================
 
 class SettingsScreen extends StatefulWidget {
@@ -53,7 +50,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.only(bottom: AppSpacing.xl),
           children: [
-            // ── Header ──────────────────────────────────────
             _SettingsHeader(),
 
             // ── Appearance ──────────────────────────────────
@@ -90,7 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _ToggleRow(
                   icon: Icons.notifications_outlined,
                   label: 'Push Notifications',
-                  subtitle: 'Get notified about project updates,\ntasks and team activity',
+                  subtitle:
+                      'Get notified about project updates,\ntasks and team activity',
                   value: _get('Push Notifications'),
                   onChanged: (v) => _set('Push Notifications', v),
                 ),
@@ -131,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
                 _NavRow(
-                  icon: Icons.g_mobiledata_rounded,
+                  icon: Icons.link_rounded,
                   label: 'Connected Accounts',
                   subtitle: 'Google, Apple and more',
                   onTap: () => _navigate('Connected Accounts'),
@@ -255,6 +252,29 @@ class _SettingsGroup extends StatelessWidget {
 }
 
 // ============================================================
+// ICON CONTAINER — shared primary-tinted icon badge
+// ============================================================
+
+class _IconBadge extends StatelessWidget {
+  const _IconBadge({required this.icon});
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        // 🎨 primary-tinted background, primary icon colour
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: AppRadius.smAll,
+      ),
+      child: Icon(icon, size: AppConstants.iconSm, color: AppColors.primary),
+    );
+  }
+}
+
+// ============================================================
 // TOGGLE ROW
 // ============================================================
 
@@ -288,11 +308,7 @@ class _ToggleRow extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Icon(
-                icon,
-                size: AppConstants.iconSm,
-                color: AppColors.textSecondary,
-              ),
+              child: _IconBadge(icon: icon),
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(
@@ -369,11 +385,7 @@ class _NavRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: AppConstants.iconSm,
-                color: AppColors.textSecondary,
-              ),
+              _IconBadge(icon: icon),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Column(

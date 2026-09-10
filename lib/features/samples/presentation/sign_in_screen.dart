@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/responsive/responsive.dart';
 import '../../../core/theme/app_colors.dart';
@@ -14,9 +15,6 @@ import '../../../core/widgets/app_text_field.dart';
 // ============================================================
 // SIGN IN SCREEN
 // 🎨 PROJECT-SPECIFIC — sample content only
-// Matches reference: WorkSpace logo, "Welcome back" heading,
-// email + password fields with labels, remember me + forgot,
-// sign-in button, social buttons, create account, terms.
 // ============================================================
 
 class SignInScreen extends StatefulWidget {
@@ -134,9 +132,7 @@ class _SignInScreenState extends State<SignInScreen>
     );
 
     return SafeArea(
-      child: isTablet
-          ? _tabletLayout(content)
-          : _mobileLayout(content),
+      child: isTablet ? _tabletLayout(content) : _mobileLayout(content),
     );
   }
 
@@ -221,15 +217,12 @@ class _SignInForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Logo ─────────────────────────────────────────────
         const _WorkSpaceLogo(),
         const SizedBox(height: AppSpacing.lg),
 
-        // ── Heading ──────────────────────────────────────────
         Text(
           'Welcome back',
           style: AppTypography.h1.copyWith(color: AppColors.textPrimary),
-          textAlign: TextAlign.left,
         ),
         const SizedBox(height: AppSpacing.xxs),
         Text(
@@ -238,7 +231,7 @@ class _SignInForm extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
 
-        // ── Email ─────────────────────────────────────────────
+        // ── Email ──────────────────────────────────────────
         Text(
           'Email address',
           style: AppTypography.caption.copyWith(
@@ -252,7 +245,8 @@ class _SignInForm extends StatelessWidget {
           focusNode: emailFocus,
           hint: 'alex.johnson@company.com',
           errorText: emailError,
-          prefixIcon: const Icon(Icons.mail_outline_rounded),
+          // 🎨 primary-coloured icon
+          prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.primary),
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           onSubmitted: (_) => passwordFocus.requestFocus(),
@@ -260,7 +254,7 @@ class _SignInForm extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
 
-        // ── Password ──────────────────────────────────────────
+        // ── Password ───────────────────────────────────────
         Text(
           'Password',
           style: AppTypography.caption.copyWith(
@@ -274,7 +268,8 @@ class _SignInForm extends StatelessWidget {
           focusNode: passwordFocus,
           hint: 'Enter your password',
           errorText: passwordError,
-          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          // 🎨 primary-coloured icon
+          prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
           obscureText: !showPassword,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => onSignIn(),
@@ -283,7 +278,8 @@ class _SignInForm extends StatelessWidget {
               showPassword
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: AppColors.textSecondary,
+              // 🎨 primary-coloured visibility toggle
+              color: AppColors.primary,
             ),
             onPressed: onTogglePassword,
             tooltip: showPassword ? 'Hide password' : 'Show password',
@@ -291,7 +287,7 @@ class _SignInForm extends StatelessWidget {
           semanticLabel: 'Password',
         ),
 
-        // ── Remember me + Forgot ──────────────────────────────
+        // ── Remember me + Forgot ───────────────────────────
         const SizedBox(height: AppSpacing.xs),
         Row(
           children: [
@@ -338,7 +334,7 @@ class _SignInForm extends StatelessWidget {
           ],
         ),
 
-        // ── Sign In button ────────────────────────────────────
+        // ── Sign In button ─────────────────────────────────
         const SizedBox(height: AppSpacing.xs),
         AppButton(
           label: 'Sign In',
@@ -347,12 +343,12 @@ class _SignInForm extends StatelessWidget {
           semanticLabel: 'Sign in to your account',
         ),
 
-        // ── OR divider ────────────────────────────────────────
+        // ── OR divider ─────────────────────────────────────
         const SizedBox(height: AppSpacing.sm),
         const _OrDivider(),
         const SizedBox(height: AppSpacing.sm),
 
-        // ── Social buttons ────────────────────────────────────
+        // ── Social buttons ─────────────────────────────────
         _SocialButton(
           icon: const _GoogleIcon(),
           label: 'Continue with Google',
@@ -365,7 +361,7 @@ class _SignInForm extends StatelessWidget {
           onTap: () => onSocialTap('Apple'),
         ),
 
-        // ── Create account ────────────────────────────────────
+        // ── Create account ─────────────────────────────────
         const SizedBox(height: AppSpacing.sm),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -393,7 +389,7 @@ class _SignInForm extends StatelessWidget {
           ],
         ),
 
-        // ── Terms ─────────────────────────────────────────────
+        // ── Terms ──────────────────────────────────────────
         const SizedBox(height: AppSpacing.sm),
         _TermsText(onTermsTap: onTermsTap, onPrivacyTap: onPrivacyTap),
       ],
@@ -426,11 +422,7 @@ class _WorkSpaceLogo extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.bolt_rounded,
-            color: Colors.white,
-            size: 40,
-          ),
+          child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 40),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
@@ -484,12 +476,13 @@ class _SocialButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(width: 22, height: 22, child: icon),
+                SizedBox(width: 32, height: 32, child: icon),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   label,
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -519,9 +512,7 @@ class _OrDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Text(
             'or continue with',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textDisabled,
-            ),
+            style: AppTypography.caption.copyWith(color: AppColors.textDisabled),
           ),
         ),
         const Expanded(
@@ -533,7 +524,7 @@ class _OrDivider extends StatelessWidget {
 }
 
 // ============================================================
-// GOOGLE ICON — custom painted
+// GOOGLE ICON — polished brand badge with layered depth
 // ============================================================
 
 class _GoogleIcon extends StatelessWidget {
@@ -541,49 +532,15 @@ class _GoogleIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(size: const Size(20, 20), painter: _GooglePainter());
-  }
-}
-
-class _GooglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final r = size.width / 2 - 1;
-    final sw = size.width * 0.18;
-
-    void arc(double start, double sweep, Color color) {
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(cx, cy), radius: r - sw / 2),
-        start,
-        sweep,
-        false,
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = sw
-          ..strokeCap = StrokeCap.butt,
-      );
-    }
-
-    arc(-0.52, 1.70, const Color(0xFF4285F4));
-    arc(3.14 - 0.15, 1.30, const Color(0xFFEA4335));
-    arc(4.45, 1.20, const Color(0xFFFBBC05));
-    arc(5.65, 0.89, const Color(0xFF34A853));
-
-    canvas.drawLine(
-      Offset(cx, cy),
-      Offset(cx + r, cy),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = sw
-        ..strokeCap = StrokeCap.butt,
+    return Center(
+      child: SvgPicture.asset(
+        'assets/icons/google_logo.svg',
+        width: 22,
+        height: 22,
+        fit: BoxFit.contain,
+      ),
     );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ============================================================

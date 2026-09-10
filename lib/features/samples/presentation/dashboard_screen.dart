@@ -93,7 +93,7 @@ class _DashboardHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xxs),
-                    const Text('👋', style: TextStyle(fontSize: 22)),
+                    
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -418,8 +418,17 @@ class _StatCard extends StatelessWidget {
   const _StatCard({required this.stat});
   final DashboardStat stat;
 
+  static const _icons = [
+    Icons.folder_open_outlined,
+    Icons.check_circle_outline_rounded,
+    Icons.group_outlined,
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // Determine icon by position in the stats list
+    final idx = SampleData.stats.indexOf(stat).clamp(0, _icons.length - 1);
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
@@ -431,10 +440,19 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.folder_open_outlined,
-            size: AppConstants.iconSm,
-            color: AppColors.primary,
+          // 🎨 primary-tinted icon container
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: AppRadius.smAll,
+            ),
+            child: Icon(
+              _icons[idx],
+              size: AppConstants.iconSm,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(

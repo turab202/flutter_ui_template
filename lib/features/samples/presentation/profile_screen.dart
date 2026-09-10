@@ -17,8 +17,6 @@ import '../data/sample_data.dart';
 // ============================================================
 // PROFILE SCREEN
 // 🎨 PROJECT-SPECIFIC — sample content only
-// Matches reference: avatar, name, Pro Plan badge, stats row,
-// About section with list tiles, Skills chips, Edit Profile btn.
 // ============================================================
 
 class ProfileScreen extends StatelessWidget {
@@ -73,7 +71,7 @@ class _ProfileHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Top bar: title + edit icon
+          // Top bar: title + edit icon (primary colour)
           Row(
             children: [
               Expanded(
@@ -95,7 +93,8 @@ class _ProfileHeader extends StatelessWidget {
                     child: Icon(
                       Icons.edit_outlined,
                       size: AppConstants.iconMd,
-                      color: AppColors.textPrimary,
+                      // 🎨 primary colour for edit icon
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -104,32 +103,37 @@ class _ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Avatar with online badge
-          AppAvatar(
-            initials: SampleData.userInitials,
-            size: AppAvatarSize.lg,
-            semanticLabel: SampleData.userName,
-            badge: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: AppColors.success,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.background, width: 2),
+          // Avatar with online badge + subtle ring
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.20),
+                width: 3,
+              ),
+            ),
+            child: AppAvatar(
+              initials: SampleData.userInitials,
+              size: AppAvatarSize.lg,
+              semanticLabel: SampleData.userName,
+              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+              foregroundColor: AppColors.primary,
+              badge: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.background, width: 2),
+                ),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
 
-          // Name + Pro Plan badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                SampleData.userName,
-                style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
-              ),
-            ],
+          Text(
+            SampleData.userName,
+            style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
@@ -137,6 +141,7 @@ class _ProfileHeader extends StatelessWidget {
             style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xs),
+          // Pro Plan badge with warm gold tint
           const AppBadge(
             label: '👑  Pro Plan',
             variant: AppBadgeVariant.warning,
@@ -146,6 +151,7 @@ class _ProfileHeader extends StatelessWidget {
             SampleData.userBio,
             style: AppTypography.caption.copyWith(
               color: AppColors.textSecondary,
+              height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -163,7 +169,7 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: AppRadius.mdAll,
@@ -224,7 +230,7 @@ class _StatCell extends StatelessWidget {
 }
 
 // ============================================================
-// ABOUT SECTION — list tiles with chevrons
+// ABOUT SECTION
 // ============================================================
 
 class _AboutSection extends StatelessWidget {
@@ -306,7 +312,20 @@ class _AboutRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, size: AppConstants.iconSm, color: AppColors.textSecondary),
+              // 🎨 primary-tinted icon container
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: AppRadius.smAll,
+                ),
+                child: Icon(
+                  icon,
+                  size: AppConstants.iconSm,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Column(
@@ -369,10 +388,7 @@ class _SkillsSection extends StatelessWidget {
             runSpacing: AppSpacing.xxs,
             children: SampleData.skills
                 .map(
-                  (s) => AppBadge(
-                    label: s,
-                    variant: AppBadgeVariant.primary,
-                  ),
+                  (s) => AppBadge(label: s, variant: AppBadgeVariant.primary),
                 )
                 .toList(),
           ),
