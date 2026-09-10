@@ -1,389 +1,136 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_constants.dart';
+import '../../../core/responsive/responsive.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_avatar.dart';
-import '../../../core/widgets/app_badge.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_divider.dart';
-import '../../../core/widgets/app_empty_state.dart';
-import '../../../core/widgets/app_loading.dart';
-import '../../../core/widgets/app_skeleton.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../data/sample_data.dart';
-import '../widgets/sample_screen_shell.dart';
 
 // ============================================================
 // DASHBOARD / HOME SCREEN
-// Matches reference: greeting banner, user card, stat strip,
-// quick actions, active projects, recent activity.
+// 🎨 PROJECT-SPECIFIC — sample content only
+// Consumes the design system; does not define its own tokens.
 // ============================================================
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  bool _initialLoading = true;
-  int _filterIndex = 0;
-  bool _isLoadingMore = false;
-  bool _showEmpty = false;
-
-  static const _filters = ['All', 'Active', 'Review', 'Done'];
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (mounted) setState(() => _initialLoading = false);
-    });
-  }
-
-  Future<void> _loadMore() async {
-    setState(() => _isLoadingMore = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (!mounted) return;
-    setState(() {
-      _isLoadingMore = false;
-      _showEmpty = true;
-    });
-    showAppToast(context, message: 'All activity loaded');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: _initialLoading ? _buildSkeleton() : _buildBody(context),
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: ShimmerScope(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.xs),
-                const SkeletonLine(width: 140, height: 14),
-                const SizedBox(height: 6),
-                const SkeletonLine(width: 220, height: 28),
-                const SizedBox(height: 4),
-                const SkeletonLine(width: 180, height: 14),
-                const SizedBox(height: AppSpacing.sm),
-                // User card skeleton
-                SkeletonBox(
-                  width: double.infinity,
-                  height: 72,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                // Stat row
-                Row(
-                  children: List.generate(
-                    4,
-                    (_) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: SkeletonBox(
-                          width: double.infinity,
-                          height: 60,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const SkeletonLine(width: 120, height: 18),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: List.generate(
-                    4,
-                    (_) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: SkeletonBox(
-                          width: double.infinity,
-                          height: 80,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const SkeletonLine(width: 120, height: 18),
-                const SizedBox(height: AppSpacing.xs),
-                const SkeletonCard(),
-                const SizedBox(height: AppSpacing.xs),
-                const SkeletonCard(),
-              ],
+    return SafeArea(
+      child: ResponsiveConstrainedBox(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: _DashboardHeader()),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                AppSpacing.sm,
+                AppSpacing.sm,
+                AppSpacing.xl,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _CurrentProjectCard(),
+                  const SizedBox(height: AppSpacing.sm),
+                  _QuickActionsRow(),
+                  const SizedBox(height: AppSpacing.md),
+                  _ProjectOverviewSection(),
+                  const SizedBox(height: AppSpacing.md),
+                  _RecentActivitySection(),
+                  const SizedBox(height: AppSpacing.md),
+                  _UpcomingDeadlinesSection(),
+                ]),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
-
-  Widget _buildBody(BuildContext context) {
-    return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          // ── Greeting header ─────────────────────────────
-          SliverToBoxAdapter(
-            child: _GreetingHeader(
-              onSearch: () => showAppToast(context, message: 'Search (demo)'),
-              onNotifications: () =>
-                  showAppToast(context, message: '3 new notifications'),
-            ),
-          ),
-
-          // ── User card ───────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              0,
-              AppSpacing.sm,
-              AppSpacing.sm,
-            ),
-            sliver: SliverToBoxAdapter(child: _UserCard()),
-          ),
-
-          // ── Stat strip ──────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            sliver: SliverToBoxAdapter(child: _StatStrip()),
-          ),
-
-          // ── Quick Actions ────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _SectionRow(
-                title: 'Quick Actions',
-                actionLabel: 'View all',
-                onAction: () {},
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(child: _QuickActions()),
-          ),
-
-          // ── Active Projects ──────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _SectionRow(
-                title: 'Active Projects',
-                actionLabel: 'View all',
-                onAction: () {},
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                SampleData.projects
-                    .map(
-                      (p) => Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: _ProjectTile(project: p),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-
-          // ── Recent Activity ──────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _SectionRow(title: 'Recent Activity'),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: SampleFilterRow(
-                options: _filters,
-                initialIndex: _filterIndex,
-                onChanged: (i) => setState(() => _filterIndex = i),
-              ),
-            ),
-          ),
-
-          if (_filterIndex == 3 || _showEmpty)
-            SliverToBoxAdapter(
-              child: AppEmptyState(
-                icon: const Icon(Icons.inbox_outlined),
-                title: 'No completed tasks yet',
-                body: 'Finished tasks will appear here.',
-              ),
-            )
-          else ...[
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) => _ActivityRow(item: SampleData.activities[i]),
-                  childCount: SampleData.activities.length,
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.sm,
-                AppSpacing.xs,
-                AppSpacing.sm,
-                0,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: _isLoadingMore
-                    ? const AppPaginationLoader()
-                    : AppButton(
-                        label: 'Load more',
-                        onPressed: _loadMore,
-                        variant: AppButtonVariant.secondary,
-                        size: AppButtonSize.small,
-                        isFullWidth: false,
-                      ),
-              ),
-            ),
-          ],
-
-          const SliverPadding(padding: EdgeInsets.only(bottom: AppSpacing.xl)),
-        ],
-      ),
-    );
-  }
 }
 
-// ----------------------------------------------------------
-// Greeting header — "Good morning, / Alexandra Chen 👋"
-// ----------------------------------------------------------
-class _GreetingHeader extends StatelessWidget {
-  const _GreetingHeader({
-    required this.onSearch,
-    required this.onNotifications,
-  });
-  final VoidCallback onSearch;
-  final VoidCallback onNotifications;
+// ============================================================
+// HEADER
+// ============================================================
 
+class _DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.sm,
         AppSpacing.sm,
         AppSpacing.sm,
-        AppSpacing.md,
+        AppSpacing.xs,
       ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.08),
-            AppColors.surface,
-          ],
-        ),
-      ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: greeting + icons
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Good morning,',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
                   children: [
                     Text(
-                      'Good morning,',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${SampleData.userName} 👋',
+                      SampleData.userName,
                       style: AppTypography.h2.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "Let's make today productive!",
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
+                    const SizedBox(width: AppSpacing.xxs),
+                    const Text('👋', style: TextStyle(fontSize: 22)),
                   ],
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  "Here's what's happening with your workspace today.",
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          _HeaderAction(
+            icon: Icons.search_rounded,
+            semanticLabel: 'Search',
+            onTap: () => showAppToast(context, message: 'Search (demo)'),
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          _HeaderAction(
+            icon: Icons.notifications_outlined,
+            semanticLabel: 'Notifications',
+            onTap: () => showAppToast(context, message: '3 new notifications'),
+            badge: true,
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          Semantics(
+            label: 'Profile',
+            button: true,
+            child: GestureDetector(
+              onTap: () => showAppToast(context, message: 'Profile (demo)'),
+              child: const AppAvatar(
+                initials: SampleData.userInitials,
+                size: AppAvatarSize.sm,
+                semanticLabel: SampleData.userName,
               ),
-              _IconBtn(
-                icon: Icons.search_rounded,
-                label: 'Search',
-                onTap: onSearch,
-              ),
-              const SizedBox(width: AppSpacing.xxs),
-              _IconBtn(
-                icon: Icons.notifications_none_rounded,
-                label: '3 notifications',
-                onTap: onNotifications,
-                badge: true,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              const AppAvatar(
-                initials: 'AC',
-                size: AppAvatarSize.xs,
-                semanticLabel: 'Your profile',
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -391,37 +138,38 @@ class _GreetingHeader extends StatelessWidget {
   }
 }
 
-class _IconBtn extends StatelessWidget {
-  const _IconBtn({
+class _HeaderAction extends StatelessWidget {
+  const _HeaderAction({
     required this.icon,
-    required this.label,
+    required this.semanticLabel,
     required this.onTap,
     this.badge = false,
   });
+
   final IconData icon;
-  final String label;
+  final String semanticLabel;
   final VoidCallback onTap;
   final bool badge;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: label,
+      label: semanticLabel,
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: AppRadius.fullAll,
         child: SizedBox(
-          width: 40,
-          height: 40,
+          width: AppConstants.minTouchTarget,
+          height: AppConstants.minTouchTarget,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 22, color: AppColors.textPrimary),
+              Icon(icon, size: AppConstants.iconMd, color: AppColors.textPrimary),
               if (badge)
                 Positioned(
                   top: 8,
-                  right: 7,
+                  right: 8,
                   child: Container(
                     width: 8,
                     height: 8,
@@ -439,314 +187,22 @@ class _IconBtn extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// User card — avatar, name, title, location
-// ----------------------------------------------------------
-class _UserCard extends StatelessWidget {
+// ============================================================
+// CURRENT PROJECT CARD — blue filled card
+// ============================================================
+
+class _CurrentProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final int pct = (SampleData.currentProjectProgress * 100).round();
+
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlay.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const AppAvatar(
-            initials: 'AC',
-            size: AppAvatarSize.sm,
-            semanticLabel: 'Alexandra Chen',
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      SampleData.userName,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xxs),
-                    const AppBadge(
-                      label: 'Pro',
-                      variant: AppBadgeVariant.primary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  SampleData.userTitle,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 12,
-                      color: AppColors.textDisabled,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${SampleData.userLocation} · ${SampleData.userDepartment}',
-                      style: AppTypography.small.copyWith(
-                        color: AppColors.textDisabled,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.textDisabled,
-            size: 20,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Stat strip — 4 numbers in a row
-// ----------------------------------------------------------
-class _StatStrip extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    const stats = [
-      ('24', 'Projects'),
-      ('142', 'Tasks'),
-      ('4.9', 'Rating'),
-      ('4y', 'Tenure'),
-    ];
-    return Container(
-      margin: const EdgeInsets.only(top: AppSpacing.sm),
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlay.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: List.generate(stats.length * 2 - 1, (i) {
-          if (i.isOdd) {
-            return Container(
-              width: 1,
-              height: 28,
-              color: AppColors.borderDefault,
-            );
-          }
-          final s = stats[i ~/ 2];
-          return Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  s.$1,
-                  style: AppTypography.h3.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  s.$2,
-                  style: AppTypography.small.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Section row — title + optional "View all"
-// ----------------------------------------------------------
-class _SectionRow extends StatelessWidget {
-  const _SectionRow({required this.title, this.actionLabel, this.onAction});
-  final String title;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
-          ),
-        ),
-        if (actionLabel != null)
-          Semantics(
-            label: actionLabel,
-            button: true,
-            child: GestureDetector(
-              onTap: onAction,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxs,
-                  vertical: AppSpacing.xxs,
-                ),
-                child: Text(
-                  actionLabel!,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Quick actions — icon tiles in a horizontal row
-// ----------------------------------------------------------
-class _QuickActions extends StatelessWidget {
-  static const _actions = [
-    (
-      icon: Icons.add_circle_outline_rounded,
-      label: 'New Project',
-      color: Color(0xFF0066CC),
-    ),
-    (
-      icon: Icons.upload_file_outlined,
-      label: 'Upload File',
-      color: Color(0xFF059669),
-    ),
-    (
-      icon: Icons.people_outline_rounded,
-      label: 'Invite Team',
-      color: Color(0xFFD97706),
-    ),
-    (
-      icon: Icons.bar_chart_rounded,
-      label: 'View Reports',
-      color: Color(0xFF7C3AED),
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(_actions.length * 2 - 1, (i) {
-        if (i.isOdd) return const SizedBox(width: AppSpacing.xs);
-        final a = _actions[i ~/ 2];
-        return Expanded(
-          child: _QuickTile(icon: a.icon, label: a.label, color: a.color),
-        );
-      }),
-    );
-  }
-}
-
-class _QuickTile extends StatelessWidget {
-  const _QuickTile({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: label,
-      button: true,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.borderDefault),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                label,
-                style: AppTypography.small.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Project tile — name, progress bar, due date, members
-// ----------------------------------------------------------
-class _ProjectTile extends StatelessWidget {
-  const _ProjectTile({required this.project});
-  final ProjectItem project;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Color(project.colorHex);
-    final pct = (project.progress * 100).toInt();
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderDefault),
+        color: AppColors.primary,
+        borderRadius: AppRadius.mdAll,
+        boxShadow: AppShadows.elevation2,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -754,72 +210,266 @@ class _ProjectTile extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.20),
+                  borderRadius: AppRadius.smAll,
+                ),
+                child: const Icon(
+                  Icons.work_outline_rounded,
+                  color: Colors.white,
+                  size: AppConstants.iconSm,
+                ),
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
-                  project.name,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                  SampleData.currentProjectLabel,
+                  style: AppTypography.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.80),
                   ),
                 ),
               ),
-              AppBadge(
-                label: 'Due ${project.dueDate}',
-                variant: AppBadgeVariant.secondary,
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.20),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: LinearProgressIndicator(
-              value: project.progress,
-              backgroundColor: AppColors.borderDefault,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 5,
-            ),
+          Text(
+            SampleData.currentProjectName,
+            style: AppTypography.h3.copyWith(color: Colors.white),
           ),
-          const SizedBox(height: AppSpacing.xxs),
+          const SizedBox(height: AppSpacing.xs),
           Row(
             children: [
-              Text(
-                '$pct% complete',
-                style: AppTypography.small.copyWith(
-                  color: AppColors.textSecondary,
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: AppRadius.fullAll,
+                  child: LinearProgressIndicator(
+                    value: SampleData.currentProjectProgress,
+                    minHeight: 6,
+                    backgroundColor: Colors.white.withValues(alpha: 0.25),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 ),
               ),
-              const Spacer(),
-              // Member initials
-              ...List.generate(
-                project.members.clamp(0, 3),
-                (i) => Transform.translate(
-                  offset: Offset(i * -8.0, 0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.background,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: AppAvatar(
-                      initials: String.fromCharCode(65 + i),
-                      size: AppAvatarSize.xxs,
-                      backgroundColor: color.withValues(alpha: 0.15),
-                      foregroundColor: color,
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                '$pct%',
+                style: AppTypography.small.copyWith(
+                  color: Colors.white,
+                  fontWeight: AppTypography.weightSemibold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            '${SampleData.currentProjectTasks} • ${SampleData.currentProjectDue}',
+            style: AppTypography.small.copyWith(
+              color: Colors.white.withValues(alpha: 0.80),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// QUICK ACTIONS ROW
+// ============================================================
+
+class _QuickActionsRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: SampleData.quickActions.map((action) {
+        return _QuickActionItem(action: action);
+      }).toList(),
+    );
+  }
+}
+
+class _QuickActionItem extends StatelessWidget {
+  const _QuickActionItem({required this.action});
+  final QuickAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: action.label,
+      button: true,
+      child: InkWell(
+        onTap: () => showAppToast(context, message: '${action.label} (demo)'),
+        borderRadius: AppRadius.mdAll,
+        child: SizedBox(
+          width: 72,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.mdAll,
+                  border: Border.all(color: AppColors.borderDefault),
+                ),
+                child: Icon(
+                  IconData(action.iconCodePoint, fontFamily: 'MaterialIcons'),
+                  size: AppConstants.iconMd,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                action.label,
+                style: AppTypography.small.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PROJECT OVERVIEW — stat cards grid
+// ============================================================
+
+class _ProjectOverviewSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Project Overview',
+              style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            Semantics(
+              label: 'View all projects',
+              button: true,
+              child: GestureDetector(
+                onTap: () => showAppToast(context, message: 'View all (demo)'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  child: Text(
+                    'View all',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: AppTypography.weightMedium,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.xxs),
-              Text(
-                '${project.members} members',
-                style: AppTypography.small.copyWith(
-                  color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          children: SampleData.stats.asMap().entries.map((entry) {
+            final i = entry.key;
+            final stat = entry.value;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: i == 0 ? 0 : AppSpacing.xxs,
+                  right: i == SampleData.stats.length - 1 ? 0 : AppSpacing.xxs,
+                ),
+                child: _StatCard(stat: stat),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.stat});
+  final DashboardStat stat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(color: AppColors.borderDefault),
+        boxShadow: AppShadows.elevation1,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.folder_open_outlined,
+            size: AppConstants.iconSm,
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            stat.value,
+            style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            stat.label,
+            style: AppTypography.small.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Row(
+            children: [
+              Icon(
+                stat.isPositive
+                    ? Icons.arrow_upward_rounded
+                    : Icons.arrow_downward_rounded,
+                size: 10,
+                color: stat.isPositive ? AppColors.success : AppColors.error,
+              ),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  stat.delta,
+                  style: AppTypography.small.copyWith(
+                    color: stat.isPositive ? AppColors.success : AppColors.error,
+                    fontSize: 10,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -830,93 +480,233 @@ class _ProjectTile extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Activity row
-// ----------------------------------------------------------
+// ============================================================
+// RECENT ACTIVITY
+// ============================================================
+
+class _RecentActivitySection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Recent Activity',
+          style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: AppRadius.mdAll,
+            border: Border.all(color: AppColors.borderDefault),
+            boxShadow: AppShadows.elevation1,
+          ),
+          child: Column(
+            children: SampleData.activities.asMap().entries.map((entry) {
+              final i = entry.key;
+              final item = entry.value;
+              return Column(
+                children: [
+                  _ActivityRow(item: item),
+                  if (i < SampleData.activities.length - 1)
+                    const AppDivider(indent: AppSpacing.xl + AppSpacing.xs),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ActivityRow extends StatelessWidget {
   const _ActivityRow({required this.item});
   final ActivityItem item;
 
-  static AppBadgeVariant _variant(ActivityBadge b) {
-    switch (b) {
-      case ActivityBadge.success:
-        return AppBadgeVariant.success;
-      case ActivityBadge.warning:
-        return AppBadgeVariant.warning;
-      case ActivityBadge.primary:
-        return AppBadgeVariant.primary;
-      case ActivityBadge.secondary:
-        return AppBadgeVariant.secondary;
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          item.isFile
+              ? Container(
+                  width: AppConstants.avatarSm,
+                  height: AppConstants.avatarSm,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.smAll,
+                  ),
+                  child: const Icon(
+                    Icons.insert_drive_file_outlined,
+                    size: AppConstants.iconSm,
+                    color: AppColors.primary,
+                  ),
+                )
+              : AppAvatar(
+                  initials: item.actorInitials,
+                  size: AppAvatarSize.sm,
+                  semanticLabel: item.actorName,
+                ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: item.actorName,
+                        style: const TextStyle(
+                          fontWeight: AppTypography.weightMedium,
+                        ),
+                      ),
+                      TextSpan(text: ' ${item.action} '),
+                      TextSpan(
+                        text: item.target,
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: AppTypography.weightMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.timeAgo,
+                  style: AppTypography.small.copyWith(
+                    color: AppColors.textDisabled,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: AppConstants.iconSm,
+            color: AppColors.textDisabled,
+          ),
+        ],
+      ),
+    );
   }
+}
 
+// ============================================================
+// UPCOMING DEADLINES
+// ============================================================
+
+class _UpcomingDeadlinesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.history_rounded,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.title,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        AppBadge(
-                          label: item.badgeLabel,
-                          variant: _variant(item.badgeVariant),
-                        ),
-                      ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Upcoming Deadlines',
+              style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            Semantics(
+              label: 'View all deadlines',
+              button: true,
+              child: GestureDetector(
+                onTap: () => showAppToast(context, message: 'View all (demo)'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  child: Text(
+                    'View all',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: AppTypography.weightMedium,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.subtitle,
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.timeAgo,
-                      style: AppTypography.small.copyWith(
-                        color: AppColors.textDisabled,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const AppDivider(indent: 44),
+        const SizedBox(height: AppSpacing.xs),
+        ...SampleData.deadlines.map((d) => _DeadlineRow(item: d)),
       ],
+    );
+  }
+}
+
+class _DeadlineRow extends StatelessWidget {
+  const _DeadlineRow({required this.item});
+  final DeadlineItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(color: AppColors.borderDefault),
+        boxShadow: AppShadows.elevation1,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: AppRadius.smAll,
+            ),
+            child: const Icon(
+              Icons.calendar_today_outlined,
+              size: AppConstants.iconSm,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${item.date} • ${item.time}',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: AppConstants.iconSm,
+            color: AppColors.textDisabled,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/responsive/responsive.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_avatar.dart';
-import '../../../core/widgets/app_badge.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_dialog.dart';
 import '../../../core/widgets/app_divider.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import '../data/sample_data.dart';
 
 // ============================================================
 // SETTINGS SCREEN
-// Reference: profile card, APPEARANCE / NOTIFICATIONS /
-// ACCOUNT grouped sections, iOS-style toggle rows,
-// sign-out + delete-account danger zone.
+// 🎨 PROJECT-SPECIFIC — sample content only
+// Matches reference: title + subtitle header, grouped sections
+// (Appearance, Notifications, Account, Privacy & Security)
+// with toggle rows and navigate rows.
 // ============================================================
 
 class SettingsScreen extends StatefulWidget {
@@ -27,18 +26,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Toggle states (key = label)
   final Map<String, bool> _toggles = {
-    'Dark Mode': false,
-    'Compact Layout': true,
     'Push Notifications': true,
-    'Email Digest': true,
-    'Mentions & replies': true,
+    'Email Notifications': true,
+    'Biometric Authentication': true,
   };
 
-  double _textScale = 1.0;
-
   bool _get(String k) => _toggles[k] ?? false;
+
   void _set(String k, bool v) {
     setState(() => _toggles[k] = v);
     showAppToast(
@@ -48,380 +43,155 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _confirmSignOut() {
-    showAppDialog(
-      context: context,
-      dialog: AppDialog(
-        title: 'Sign out',
-        icon: const Icon(
-          Icons.logout_rounded,
-          size: 40,
-          color: AppColors.error,
-        ),
-        content: const Text(
-          'Are you sure you want to sign out? You can sign back in at any time.',
-        ),
-        primaryLabel: 'Sign out',
-        primaryAction: () {
-          Navigator.of(context).pop();
-          showAppToast(
-            context,
-            message: 'Signed out (demo)',
-            variant: AppToastVariant.neutral,
-          );
-        },
-        secondaryLabel: 'Cancel',
-        secondaryAction: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
-
-  void _confirmDelete() {
-    showAppDialog(
-      context: context,
-      dialog: AppDialog(
-        title: 'Delete account',
-        icon: const Icon(
-          Icons.delete_forever_rounded,
-          size: 40,
-          color: AppColors.error,
-        ),
-        content: const Text(
-          'This will permanently delete your account and all your data. This action cannot be undone.',
-        ),
-        primaryLabel: 'Delete permanently',
-        primaryAction: () {
-          Navigator.of(context).pop();
-          showAppToast(
-            context,
-            message: 'Account deletion requested (demo)',
-            variant: AppToastVariant.error,
-          );
-        },
-        secondaryLabel: 'Keep account',
-        secondaryAction: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
+  void _navigate(String label) =>
+      showAppToast(context, message: '$label (demo)');
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = ResponsiveLayout.isTablet(context);
-
-    Widget body = ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        // ── App bar ─────────────────────────────────────
-        _SettingsAppBar(),
-
-        // ── Profile card ─────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.sm,
-            AppSpacing.xs,
-            AppSpacing.sm,
-            0,
-          ),
-          child: _ProfileCard(),
-        ),
-
-        // ── APPEARANCE ──────────────────────────────────
-        _GroupHeader(label: 'APPEARANCE'),
-        _Group(
+    return SafeArea(
+      child: ResponsiveConstrainedBox(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
           children: [
-            _ToggleRow(
-              icon: Icons.dark_mode_outlined,
-              label: 'Dark Mode',
-              subtitle: 'Switch to dark theme',
-              value: _get('Dark Mode'),
-              onChanged: (v) => _set('Dark Mode', v),
-            ),
-            const AppDivider(indent: 52),
-            _ToggleRow(
-              icon: Icons.view_compact_outlined,
-              label: 'Compact Layout',
-              subtitle: 'Reduce spacing in lists',
-              value: _get('Compact Layout'),
-              onChanged: (v) => _set('Compact Layout', v),
-            ),
-            const AppDivider(indent: 52),
-            // Text size slider
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.text_fields_outlined,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'Text Size',
-                      style: AppTypography.body.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      _textScale < 0.95
-                          ? 'Small'
-                          : _textScale > 1.05
-                          ? 'Large'
-                          : 'Default',
-                      style: AppTypography.small.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.sm,
-                0,
-                AppSpacing.sm,
-                AppSpacing.xs,
-              ),
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: AppColors.primary,
-                  inactiveTrackColor: AppColors.borderDefault,
-                  thumbColor: AppColors.primary,
-                  overlayColor: AppColors.primary.withValues(alpha: 0.12),
-                  trackHeight: 4,
-                ),
-                child: Slider(
-                  value: _textScale,
-                  min: 0.8,
-                  max: 1.4,
-                  divisions: 6,
-                  onChanged: (v) => setState(() => _textScale = v),
-                ),
-              ),
-            ),
-            const AppDivider(indent: 52),
-            _NavRow(
-              icon: Icons.color_lens_outlined,
-              label: 'Accent Color',
-              subtitle: 'Blue (default)',
-              onTap: () =>
-                  showAppToast(context, message: 'Color picker (demo)'),
-            ),
-          ],
-        ),
+            // ── Header ──────────────────────────────────────
+            _SettingsHeader(),
 
-        // ── NOTIFICATIONS ───────────────────────────────
-        _GroupHeader(label: 'NOTIFICATIONS'),
-        _Group(
-          children: [
-            _ToggleRow(
-              icon: Icons.notifications_outlined,
-              label: 'Push Notifications',
-              subtitle: 'Receive alerts on your device',
-              value: _get('Push Notifications'),
-              onChanged: (v) => _set('Push Notifications', v),
-            ),
-            const AppDivider(indent: 52),
-            _ToggleRow(
-              icon: Icons.email_outlined,
-              label: 'Email Digest',
-              subtitle: 'Daily summary at 9am',
-              value: _get('Email Digest'),
-              onChanged: (v) => _set('Email Digest', v),
-            ),
-            const AppDivider(indent: 52),
-            _NavRow(
-              icon: Icons.tune_outlined,
-              label: 'Notify me about',
-              onTap: () {},
-              trailing: const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textDisabled,
-                size: 18,
-              ),
-            ),
-            const AppDivider(indent: 52),
-            _ToggleRow(
-              icon: Icons.alternate_email_rounded,
-              label: 'Mentions & replies',
-              value: _get('Mentions & replies'),
-              onChanged: (v) => _set('Mentions & replies', v),
-            ),
-          ],
-        ),
-
-        // ── ACCOUNT ────────────────────────────────────
-        _GroupHeader(label: 'ACCOUNT'),
-        _Group(
-          children: [
-            _NavRow(
-              icon: Icons.security_outlined,
-              label: 'Privacy & Security',
-              onTap: () =>
-                  showAppToast(context, message: 'Privacy & Security (demo)'),
-            ),
-            const AppDivider(indent: 52),
-            _NavRow(
-              icon: Icons.help_outline_rounded,
-              label: 'Help & Support',
-              onTap: () =>
-                  showAppToast(context, message: 'Help & Support (demo)'),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppSpacing.sm),
-
-        // ── Danger zone ─────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          child: Column(
-            children: [
-              AppButton(
-                label: 'Sign Out',
-                onPressed: _confirmSignOut,
-                variant: AppButtonVariant.secondary,
-                leadingIcon: const Icon(Icons.logout_rounded),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              AppButton(
-                label: 'Delete Account',
-                onPressed: _confirmDelete,
-                variant: AppButtonVariant.destructive,
-                leadingIcon: const Icon(Icons.delete_forever_outlined),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    if (isTablet) {
-      body = Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 680),
-          child: body,
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(child: body),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// App bar
-// ----------------------------------------------------------
-class _SettingsAppBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      color: AppColors.background,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Settings',
-              style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ----------------------------------------------------------
-// Profile summary card
-// ----------------------------------------------------------
-class _ProfileCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlay.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const AppAvatar(
-            initials: 'AC',
-            size: AppAvatarSize.md,
-            semanticLabel: 'Alexandra Chen',
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // ── Appearance ──────────────────────────────────
+            _SectionLabel(label: 'Appearance'),
+            _SettingsGroup(
               children: [
-                Text(
-                  SampleData.userName,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
+                _NavRow(
+                  icon: Icons.light_mode_outlined,
+                  label: 'Theme',
+                  value: 'Light',
+                  onTap: () => _navigate('Theme'),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  SampleData.userEmail,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.text_fields_outlined,
+                  label: 'Text Size',
+                  value: 'Normal',
+                  onTap: () => _navigate('Text Size'),
                 ),
-                const SizedBox(height: AppSpacing.xxs),
-                const AppBadge(
-                  label: 'Pro Plan',
-                  variant: AppBadgeVariant.primary,
-                  leadingIcon: Icon(Icons.star_rounded),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.language_outlined,
+                  label: 'Language',
+                  value: 'English',
+                  onTap: () => _navigate('Language'),
                 ),
               ],
             ),
-          ),
-          Semantics(
-            label: 'Edit profile',
-            button: true,
-            child: InkWell(
-              onTap: () =>
-                  showAppToast(context, message: 'Edit profile (demo)'),
-              borderRadius: BorderRadius.circular(22),
-              child: const SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(
-                  Icons.edit_outlined,
-                  size: 20,
-                  color: AppColors.primary,
+
+            // ── Notifications ────────────────────────────────
+            _SectionLabel(label: 'Notifications'),
+            _SettingsGroup(
+              children: [
+                _ToggleRow(
+                  icon: Icons.notifications_outlined,
+                  label: 'Push Notifications',
+                  subtitle: 'Get notified about project updates,\ntasks and team activity',
+                  value: _get('Push Notifications'),
+                  onChanged: (v) => _set('Push Notifications', v),
                 ),
-              ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _ToggleRow(
+                  icon: Icons.mail_outline_rounded,
+                  label: 'Email Notifications',
+                  subtitle: 'Important updates and reminders',
+                  value: _get('Email Notifications'),
+                  onChanged: (v) => _set('Email Notifications', v),
+                ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.alarm_outlined,
+                  label: 'Reminders',
+                  subtitle: 'Daily goals and deadlines',
+                  onTap: () => _navigate('Reminders'),
+                ),
+              ],
+            ),
+
+            // ── Account ──────────────────────────────────────
+            _SectionLabel(label: 'Account'),
+            _SettingsGroup(
+              children: [
+                _NavRow(
+                  icon: Icons.person_outline_rounded,
+                  label: 'Personal Information',
+                  subtitle: 'Update your profile details',
+                  onTap: () => _navigate('Personal Information'),
+                ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.lock_outline_rounded,
+                  label: 'Change Password',
+                  subtitle: 'Keep your account secure',
+                  onTap: () => _navigate('Change Password'),
+                ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.g_mobiledata_rounded,
+                  label: 'Connected Accounts',
+                  subtitle: 'Google, Apple and more',
+                  onTap: () => _navigate('Connected Accounts'),
+                ),
+              ],
+            ),
+
+            // ── Privacy & Security ───────────────────────────
+            _SectionLabel(label: 'Privacy & Security'),
+            _SettingsGroup(
+              children: [
+                _ToggleRow(
+                  icon: Icons.fingerprint_rounded,
+                  label: 'Biometric Authentication',
+                  subtitle: 'Use fingerprint or Face ID',
+                  value: _get('Biometric Authentication'),
+                  onChanged: (v) => _set('Biometric Authentication', v),
+                ),
+                const AppDivider(indent: AppSpacing.xl + AppSpacing.sm),
+                _NavRow(
+                  icon: Icons.security_outlined,
+                  label: 'Two-Factor Authentication',
+                  subtitle: 'Add an extra layer of security',
+                  onTap: () => _navigate('Two-Factor Authentication'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// SETTINGS HEADER
+// ============================================================
+
+class _SettingsHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.xs,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            'Manage your account and app preferences.',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -430,38 +200,40 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Section group header
-// ----------------------------------------------------------
-class _GroupHeader extends StatelessWidget {
-  const _GroupHeader({required this.label});
+// ============================================================
+// SECTION LABEL
+// ============================================================
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
   final String label;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(
-      AppSpacing.sm,
-      AppSpacing.sm,
-      AppSpacing.sm,
-      AppSpacing.xxs,
-    ),
-    child: Text(
-      label,
-      style: AppTypography.small.copyWith(
-        color: AppColors.textDisabled,
-        letterSpacing: 0.8,
-        fontWeight: FontWeight.w600,
-        fontSize: 11,
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.xxs,
       ),
-    ),
-  );
+      child: Text(
+        label,
+        style: AppTypography.bodyMedium.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: AppTypography.weightSemibold,
+        ),
+      ),
+    );
+  }
 }
 
-// ----------------------------------------------------------
-// Group card
-// ----------------------------------------------------------
-class _Group extends StatelessWidget {
-  const _Group({required this.children});
+// ============================================================
+// SETTINGS GROUP CARD
+// ============================================================
+
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.children});
   final List<Widget> children;
 
   @override
@@ -470,14 +242,9 @@ class _Group extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlay.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(color: AppColors.borderDefault),
+        boxShadow: AppShadows.elevation1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,9 +254,10 @@ class _Group extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Toggle row
-// ----------------------------------------------------------
+// ============================================================
+// TOGGLE ROW
+// ============================================================
+
 class _ToggleRow extends StatelessWidget {
   const _ToggleRow({
     required this.icon,
@@ -498,6 +266,7 @@ class _ToggleRow extends StatelessWidget {
     required this.value,
     required this.onChanged,
   });
+
   final IconData icon;
   final String label;
   final String? subtitle;
@@ -515,9 +284,17 @@ class _ToggleRow extends StatelessWidget {
           vertical: AppSpacing.xs,
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: AppColors.textSecondary),
-            const SizedBox(width: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(
+                icon,
+                size: AppConstants.iconSm,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,7 +306,7 @@ class _ToggleRow extends StatelessWidget {
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 1),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle!,
                       style: AppTypography.caption.copyWith(
@@ -558,22 +335,24 @@ class _ToggleRow extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Navigate row
-// ----------------------------------------------------------
+// ============================================================
+// NAVIGATE ROW
+// ============================================================
+
 class _NavRow extends StatelessWidget {
   const _NavRow({
     required this.icon,
     required this.label,
     this.subtitle,
+    this.value,
     required this.onTap,
-    this.trailing,
   });
+
   final IconData icon;
   final String label;
   final String? subtitle;
+  final String? value;
   final VoidCallback onTap;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -585,12 +364,17 @@ class _NavRow extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,
-            vertical: AppSpacing.sm,
+            vertical: AppSpacing.xs,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(icon, size: 20, color: AppColors.textSecondary),
-              const SizedBox(width: AppSpacing.sm),
+              Icon(
+                icon,
+                size: AppConstants.iconSm,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,7 +386,7 @@ class _NavRow extends StatelessWidget {
                       ),
                     ),
                     if (subtitle != null) ...[
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle!,
                         style: AppTypography.caption.copyWith(
@@ -613,12 +397,20 @@ class _NavRow extends StatelessWidget {
                   ],
                 ),
               ),
-              trailing ??
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: AppColors.textDisabled,
+              if (value != null) ...[
+                Text(
+                  value!,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
                   ),
+                ),
+                const SizedBox(width: AppSpacing.xxs),
+              ],
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: AppConstants.iconSm,
+                color: AppColors.textDisabled,
+              ),
             ],
           ),
         ),

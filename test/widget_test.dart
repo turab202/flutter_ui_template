@@ -8,12 +8,10 @@ import 'package:flutter_ui_template/main.dart';
 void main() {
   testWidgets('App smoke test — launches without error', (tester) async {
     await tester.pumpWidget(const FlutterUITemplateApp());
+    // SignInScreen.initState schedules a 60ms animation start timer.
+    // Pump past it so no pending timers remain on teardown.
+    await tester.pump(const Duration(milliseconds: 100));
 
-    // DashboardScreen starts a 1400ms skeleton timer. Pump past
-    // it so the test runner has no pending timers on teardown.
-    await tester.pump(const Duration(milliseconds: 1500));
-
-    // App renders — no uncaught exceptions.
     expect(find.byType(FlutterUITemplateApp), findsOneWidget);
   });
 }

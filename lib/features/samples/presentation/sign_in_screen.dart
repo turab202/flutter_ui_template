@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/responsive/responsive.dart';
@@ -12,10 +13,10 @@ import '../../../core/widgets/app_text_field.dart';
 
 // ============================================================
 // SIGN IN SCREEN
-// Reference: centered logo, "Welcome back" heading,
-// Google/Apple social buttons, or-divider, email + password
-// fields, remember-me checkbox, forgot password, sign-in btn,
-// "Don't have an account?" + terms footnote.
+// 🎨 PROJECT-SPECIFIC — sample content only
+// Matches reference: WorkSpace logo, "Welcome back" heading,
+// email + password fields with labels, remember me + forgot,
+// sign-in button, social buttons, create account, terms.
 // ============================================================
 
 class SignInScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _emailFocus = FocusNode();
@@ -39,24 +40,16 @@ class _SignInScreenState extends State<SignInScreen>
   String? _passwordError;
 
   late final AnimationController _fadeCtrl;
-  late final AnimationController _slideCtrl;
 
   @override
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 550),
-    );
-    _slideCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 450),
+      duration: AppMotion.screenTransition,
     );
     Future.delayed(const Duration(milliseconds: 60), () {
-      if (mounted) {
-        _fadeCtrl.forward();
-        _slideCtrl.forward();
-      }
+      if (mounted) _fadeCtrl.forward();
     });
   }
 
@@ -67,34 +60,35 @@ class _SignInScreenState extends State<SignInScreen>
     _emailFocus.dispose();
     _passwordFocus.dispose();
     _fadeCtrl.dispose();
-    _slideCtrl.dispose();
     super.dispose();
   }
 
   bool _validate() {
-    bool ok = true;
     final email = _emailController.text.trim();
     final pw = _passwordController.text;
+    String? emailErr;
+    String? pwErr;
+    if (email.isEmpty) {
+      emailErr = 'Email address is required';
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      emailErr = 'Enter a valid email address';
+    }
+    if (pw.isEmpty) {
+      pwErr = 'Password is required';
+    } else if (pw.length < 8) {
+      pwErr = 'Password must be at least 8 characters';
+    }
     setState(() {
-      _emailError = email.isEmpty
-          ? 'Email address is required'
-          : !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)
-          ? 'Enter a valid email address'
-          : null;
-      _passwordError = pw.isEmpty
-          ? 'Password is required'
-          : pw.length < 8
-          ? 'Password must be at least 8 characters'
-          : null;
-      if (_emailError != null || _passwordError != null) ok = false;
+      _emailError = emailErr;
+      _passwordError = pwErr;
     });
-    return ok;
+    return emailErr == null && pwErr == null;
   }
 
   Future<void> _signIn() async {
     if (!_validate()) return;
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 1800));
+    await Future.delayed(const Duration(milliseconds: 1600));
     if (!mounted) return;
     setState(() => _loading = false);
     showAppToast(
@@ -109,55 +103,44 @@ class _SignInScreenState extends State<SignInScreen>
     final reduce = AppMotion.shouldReduceMotion(context);
     final isTablet = ResponsiveLayout.isTablet(context);
 
-    final content = FadeTransition(
+    Widget content = FadeTransition(
       opacity: reduce
           ? const AlwaysStoppedAnimation(1.0)
           : CurvedAnimation(parent: _fadeCtrl, curve: AppMotion.decelerate),
-      child: SlideTransition(
-        position: reduce
-            ? const AlwaysStoppedAnimation(Offset.zero)
-            : Tween<Offset>(
-                begin: const Offset(0, 0.03),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: _slideCtrl,
-                  curve: AppMotion.decelerate,
-                ),
-              ),
-        child: _Form(
-          emailController: _emailController,
-          passwordController: _passwordController,
-          emailFocus: _emailFocus,
-          passwordFocus: _passwordFocus,
-          emailError: _emailError,
-          passwordError: _passwordError,
-          loading: _loading,
-          rememberMe: _rememberMe,
-          showPassword: _showPassword,
-          onRememberMe: (v) => setState(() => _rememberMe = v ?? false),
-          onTogglePassword: () =>
-              setState(() => _showPassword = !_showPassword),
-          onSignIn: _signIn,
-          onForgotPassword: () =>
-              showAppToast(context, message: 'Reset link sent (demo)'),
-          onSocialTap: (p) =>
-              showAppToast(context, message: 'Continue with $p (demo)'),
-          onCreateAccount: () =>
-              showAppToast(context, message: 'Sign up flow (demo)'),
-        ),
+      child: _SignInForm(
+        emailController: _emailController,
+        passwordController: _passwordController,
+        emailFocus: _emailFocus,
+        passwordFocus: _passwordFocus,
+        emailError: _emailError,
+        passwordError: _passwordError,
+        loading: _loading,
+        rememberMe: _rememberMe,
+        showPassword: _showPassword,
+        onRememberMe: (v) => setState(() => _rememberMe = v ?? false),
+        onTogglePassword: () => setState(() => _showPassword = !_showPassword),
+        onSignIn: _signIn,
+        onForgotPassword: () =>
+            showAppToast(context, message: 'Reset link sent (demo)'),
+        onSocialTap: (p) =>
+            showAppToast(context, message: 'Continue with $p (demo)'),
+        onCreateAccount: () =>
+            showAppToast(context, message: 'Sign up flow (demo)'),
+        onTermsTap: () =>
+            showAppToast(context, message: 'Terms of Service (demo)'),
+        onPrivacyTap: () =>
+            showAppToast(context, message: 'Privacy Policy (demo)'),
       ),
     );
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: isTablet ? _tabletWrap(content) : _mobileWrap(content),
-      ),
+    return SafeArea(
+      child: isTablet
+          ? _tabletLayout(content)
+          : _mobileLayout(content),
     );
   }
 
-  Widget _mobileWrap(Widget child) => SingleChildScrollView(
+  Widget _mobileLayout(Widget child) => SingleChildScrollView(
     padding: const EdgeInsets.symmetric(
       horizontal: AppSpacing.sm,
       vertical: AppSpacing.lg,
@@ -165,7 +148,7 @@ class _SignInScreenState extends State<SignInScreen>
     child: child,
   );
 
-  Widget _tabletWrap(Widget child) => Center(
+  Widget _tabletLayout(Widget child) => Center(
     child: SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: ConstrainedBox(
@@ -190,11 +173,12 @@ class _SignInScreenState extends State<SignInScreen>
   );
 }
 
-// ----------------------------------------------------------
-// Form content — exactly matches reference layout
-// ----------------------------------------------------------
-class _Form extends StatelessWidget {
-  const _Form({
+// ============================================================
+// SIGN IN FORM
+// ============================================================
+
+class _SignInForm extends StatelessWidget {
+  const _SignInForm({
     required this.emailController,
     required this.passwordController,
     required this.emailFocus,
@@ -210,6 +194,8 @@ class _Form extends StatelessWidget {
     required this.onForgotPassword,
     required this.onSocialTap,
     required this.onCreateAccount,
+    required this.onTermsTap,
+    required this.onPrivacyTap,
   });
 
   final TextEditingController emailController;
@@ -227,40 +213,44 @@ class _Form extends StatelessWidget {
   final VoidCallback onForgotPassword;
   final ValueChanged<String> onSocialTap;
   final VoidCallback onCreateAccount;
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Logo + heading ────────────────────────────────
-        _Logo(),
-        const SizedBox(height: AppSpacing.xl),
+        // ── Logo ─────────────────────────────────────────────
+        const _WorkSpaceLogo(),
+        const SizedBox(height: AppSpacing.lg),
 
-        // ── Social buttons ────────────────────────────────
-        _SocialBtn(
-          icon: Icons.g_mobiledata_rounded,
-          label: 'Continue with Google',
-          onTap: () => onSocialTap('Google'),
+        // ── Heading ──────────────────────────────────────────
+        Text(
+          'Welcome back',
+          style: AppTypography.h1.copyWith(color: AppColors.textPrimary),
+          textAlign: TextAlign.left,
         ),
-        const SizedBox(height: AppSpacing.xs),
-        _SocialBtn(
-          icon: Icons.apple,
-          label: 'Continue with Apple',
-          onTap: () => onSocialTap('Apple'),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(
+          'Sign in to your workspace to continue\nwhere you left off.',
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
         ),
+        const SizedBox(height: AppSpacing.md),
 
-        // ── Or divider ────────────────────────────────────
-        const SizedBox(height: AppSpacing.sm),
-        const _OrDivider(),
-        const SizedBox(height: AppSpacing.sm),
-
-        // ── Email ─────────────────────────────────────────
+        // ── Email ─────────────────────────────────────────────
+        Text(
+          'Email address',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: AppTypography.weightMedium,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxs),
         AppTextField(
           controller: emailController,
           focusNode: emailFocus,
-          label: 'Email address',
-          hint: 'you@company.com',
+          hint: 'alex.johnson@company.com',
           errorText: emailError,
           prefixIcon: const Icon(Icons.mail_outline_rounded),
           keyboardType: TextInputType.emailAddress,
@@ -270,11 +260,18 @@ class _Form extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
 
-        // ── Password ──────────────────────────────────────
+        // ── Password ──────────────────────────────────────────
+        Text(
+          'Password',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: AppTypography.weightMedium,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxs),
         AppTextField(
           controller: passwordController,
           focusNode: passwordFocus,
-          label: 'Password',
           hint: 'Enter your password',
           errorText: passwordError,
           prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -287,7 +284,6 @@ class _Form extends StatelessWidget {
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
               color: AppColors.textSecondary,
-              size: 20,
             ),
             onPressed: onTogglePassword,
             tooltip: showPassword ? 'Hide password' : 'Show password',
@@ -295,7 +291,7 @@ class _Form extends StatelessWidget {
           semanticLabel: 'Password',
         ),
 
-        // ── Remember me + Forgot ──────────────────────────
+        // ── Remember me + Forgot ──────────────────────────────
         const SizedBox(height: AppSpacing.xs),
         Row(
           children: [
@@ -307,14 +303,14 @@ class _Form extends StatelessWidget {
                 onChanged: onRememberMe,
                 activeColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppRadius.sm / 2),
                 ),
               ),
             ),
             Expanded(
               child: Text(
                 'Remember me',
-                style: AppTypography.body.copyWith(
+                style: AppTypography.caption.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -331,9 +327,9 @@ class _Form extends StatelessWidget {
                   ),
                   child: Text(
                     'Forgot password?',
-                    style: AppTypography.body.copyWith(
+                    style: AppTypography.caption.copyWith(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: AppTypography.weightSemibold,
                     ),
                   ),
                 ),
@@ -342,8 +338,8 @@ class _Form extends StatelessWidget {
           ],
         ),
 
-        // ── Sign In ───────────────────────────────────────
-        const SizedBox(height: AppSpacing.sm),
+        // ── Sign In button ────────────────────────────────────
+        const SizedBox(height: AppSpacing.xs),
         AppButton(
           label: 'Sign In',
           onPressed: loading ? null : onSignIn,
@@ -351,14 +347,32 @@ class _Form extends StatelessWidget {
           semanticLabel: 'Sign in to your account',
         ),
 
-        // ── Create account ────────────────────────────────
+        // ── OR divider ────────────────────────────────────────
+        const SizedBox(height: AppSpacing.sm),
+        const _OrDivider(),
+        const SizedBox(height: AppSpacing.sm),
+
+        // ── Social buttons ────────────────────────────────────
+        _SocialButton(
+          icon: const _GoogleIcon(),
+          label: 'Continue with Google',
+          onTap: () => onSocialTap('Google'),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        _SocialButton(
+          icon: const Icon(Icons.apple, size: 22, color: AppColors.textPrimary),
+          label: 'Continue with Apple',
+          onTap: () => onSocialTap('Apple'),
+        ),
+
+        // ── Create account ────────────────────────────────────
         const SizedBox(height: AppSpacing.sm),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Don't have an account? ",
-              style: AppTypography.body.copyWith(
+              "Don't have an account?  ",
+              style: AppTypography.caption.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -369,9 +383,9 @@ class _Form extends StatelessWidget {
                 onTap: onCreateAccount,
                 child: Text(
                   'Create account',
-                  style: AppTypography.body.copyWith(
+                  style: AppTypography.caption.copyWith(
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: AppTypography.weightSemibold,
                   ),
                 ),
               ),
@@ -379,22 +393,21 @@ class _Form extends StatelessWidget {
           ],
         ),
 
-        // ── Terms ─────────────────────────────────────────
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          'By signing in you agree to our Terms of Service and Privacy Policy.',
-          style: AppTypography.small.copyWith(color: AppColors.textDisabled),
-          textAlign: TextAlign.center,
-        ),
+        // ── Terms ─────────────────────────────────────────────
+        const SizedBox(height: AppSpacing.sm),
+        _TermsText(onTermsTap: onTermsTap, onPrivacyTap: onPrivacyTap),
       ],
     );
   }
 }
 
-// ----------------------------------------------------------
-// Logo block
-// ----------------------------------------------------------
-class _Logo extends StatelessWidget {
+// ============================================================
+// WORKSPACE LOGO
+// ============================================================
+
+class _WorkSpaceLogo extends StatelessWidget {
+  const _WorkSpaceLogo();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -403,15 +416,8 @@ class _Logo extends StatelessWidget {
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary,
-                AppColors.primary.withValues(alpha: 0.82),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
+            color: AppColors.primary,
+            shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withValues(alpha: 0.30),
@@ -420,18 +426,22 @@ class _Logo extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(Icons.bolt_rounded, color: AppColors.background, size: 40),
+          child: const Icon(
+            Icons.bolt_rounded,
+            color: Colors.white,
+            size: 40,
+          ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.xs),
         Text(
-          'Welcome back',
-          style: AppTypography.h1.copyWith(color: AppColors.textPrimary),
+          'WorkSpace',
+          style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xxs),
         Text(
-          'Sign in to your workspace',
-          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+          'Better teams. Greater results.',
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
       ],
@@ -439,16 +449,18 @@ class _Logo extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Social auth button
-// ----------------------------------------------------------
-class _SocialBtn extends StatelessWidget {
-  const _SocialBtn({
+// ============================================================
+// SOCIAL BUTTON
+// ============================================================
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
     required this.icon,
     required this.label,
     required this.onTap,
   });
-  final IconData icon;
+
+  final Widget icon;
   final String label;
   final VoidCallback onTap;
 
@@ -457,28 +469,31 @@ class _SocialBtn extends StatelessWidget {
     return Semantics(
       label: label,
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderDefault),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 24, color: AppColors.textPrimary),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                label,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+      child: Material(
+        color: AppColors.background,
+        borderRadius: AppRadius.smAll,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.smAll,
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.smAll,
+              border: Border.all(color: AppColors.borderDefault),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 22, height: 22, child: icon),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  label,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -486,24 +501,126 @@ class _SocialBtn extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------
-// Or divider
-// ----------------------------------------------------------
+// ============================================================
+// OR DIVIDER
+// ============================================================
+
 class _OrDivider extends StatelessWidget {
   const _OrDivider();
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        child: Text(
-          'or',
-          style: AppTypography.caption.copyWith(color: AppColors.textDisabled),
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Divider(color: AppColors.borderDefault, thickness: 1),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: Text(
+            'or continue with',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textDisabled,
+            ),
+          ),
+        ),
+        const Expanded(
+          child: Divider(color: AppColors.borderDefault, thickness: 1),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// GOOGLE ICON — custom painted
+// ============================================================
+
+class _GoogleIcon extends StatelessWidget {
+  const _GoogleIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(size: const Size(20, 20), painter: _GooglePainter());
+  }
+}
+
+class _GooglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = size.width / 2 - 1;
+    final sw = size.width * 0.18;
+
+    void arc(double start, double sweep, Color color) {
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx, cy), radius: r - sw / 2),
+        start,
+        sweep,
+        false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = sw
+          ..strokeCap = StrokeCap.butt,
+      );
+    }
+
+    arc(-0.52, 1.70, const Color(0xFF4285F4));
+    arc(3.14 - 0.15, 1.30, const Color(0xFFEA4335));
+    arc(4.45, 1.20, const Color(0xFFFBBC05));
+    arc(5.65, 0.89, const Color(0xFF34A853));
+
+    canvas.drawLine(
+      Offset(cx, cy),
+      Offset(cx + r, cy),
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = sw
+        ..strokeCap = StrokeCap.butt,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ============================================================
+// TERMS TEXT
+// ============================================================
+
+class _TermsText extends StatelessWidget {
+  const _TermsText({required this.onTermsTap, required this.onPrivacyTap});
+
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = AppTypography.small.copyWith(color: AppColors.textDisabled);
+    final link = AppTypography.small.copyWith(color: AppColors.primary);
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: base,
+        children: [
+          const TextSpan(text: 'By signing in, you agree to our '),
+          TextSpan(
+            text: 'Terms of Service',
+            style: link,
+            recognizer: TapGestureRecognizer()..onTap = onTermsTap,
+          ),
+          const TextSpan(text: '\nand '),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: link,
+            recognizer: TapGestureRecognizer()..onTap = onPrivacyTap,
+          ),
+          const TextSpan(text: '.'),
+        ],
       ),
-      Expanded(child: Divider(color: AppColors.borderDefault, thickness: 1)),
-    ],
-  );
+    );
+  }
 }

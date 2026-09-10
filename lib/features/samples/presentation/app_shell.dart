@@ -10,7 +10,10 @@ import 'settings_screen.dart';
 import 'sign_in_screen.dart';
 
 // ============================================================
-// APP SHELL — bottom-nav host matching reference design
+// APP SHELL
+// Shared navigation host for all four sample screens.
+// ONE navigation implementation, ONE navigation state.
+// Background and safe-area handling are centralized here.
 // ============================================================
 
 class AppShell extends StatefulWidget {
@@ -23,6 +26,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
+  // Pages are kept alive via IndexedStack — no rebuild on tab switch.
   static const List<Widget> _pages = [
     DashboardScreen(),
     SignInScreen(),
@@ -30,9 +34,9 @@ class _AppShellState extends State<AppShell> {
     SettingsScreen(),
   ];
 
-  void _openTokens() => Navigator.of(
-    context,
-  ).push(MaterialPageRoute<void>(builder: (_) => const ShowcaseScreen()));
+  void _openTokens() => Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => const ShowcaseScreen()),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +44,9 @@ class _AppShellState extends State<AppShell> {
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
       ),
+      // Scaffold background comes from AppTheme → AppColors.background.
+      // Individual screens do NOT set their own background.
       child: Scaffold(
-        backgroundColor: AppColors.background,
         body: IndexedStack(index: _index, children: _pages),
         bottomNavigationBar: AppBottomNavigation(
           currentIndex: _index,
@@ -64,7 +69,7 @@ class _AppShellState extends State<AppShell> {
               label: 'Sign In',
             ),
             const AppBottomNavItem(
-              icon: Icon(Icons.person_outlined),
+              icon: Icon(Icons.person_outline_rounded),
               activeIcon: Icon(Icons.person_rounded),
               label: 'Profile',
             ),
