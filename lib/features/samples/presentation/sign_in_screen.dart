@@ -246,7 +246,10 @@ class _SignInForm extends StatelessWidget {
           hint: 'alex.johnson@company.com',
           errorText: emailError,
           // 🎨 primary-coloured icon
-          prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.primary),
+          prefixIcon: const Icon(
+            Icons.mail_outline_rounded,
+            color: AppColors.primary,
+          ),
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           onSubmitted: (_) => passwordFocus.requestFocus(),
@@ -269,7 +272,10 @@ class _SignInForm extends StatelessWidget {
           hint: 'Enter your password',
           errorText: passwordError,
           // 🎨 primary-coloured icon
-          prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
+          prefixIcon: const Icon(
+            Icons.lock_outline_rounded,
+            color: AppColors.primary,
+          ),
           obscureText: !showPassword,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => onSignIn(),
@@ -512,7 +518,9 @@ class _OrDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Text(
             'or continue with',
-            style: AppTypography.caption.copyWith(color: AppColors.textDisabled),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textDisabled,
+            ),
           ),
         ),
         const Expanded(
